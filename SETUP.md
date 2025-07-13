@@ -39,6 +39,8 @@ CREATE TABLE public.user_profiles (
   email TEXT,
   display_name TEXT,
   avatar_url TEXT,
+  
+  -- Legacy structured fields (for backwards compatibility)
   age_range TEXT,
   household_size TEXT,
   cooking_experience TEXT,
@@ -50,9 +52,23 @@ CREATE TABLE public.user_profiles (
   meal_prep_style TEXT,
   spice_collection TEXT[] DEFAULT '{}',
   energy_preferences JSONB DEFAULT '{}',
+  
+  -- New conversational onboarding fields
+  onboarding_type TEXT DEFAULT 'structured', -- 'structured' or 'conversational'
+  cooking_background TEXT, -- Free-form response about cooking experience
+  dietary_needs TEXT, -- Free-form response about dietary needs
+  kitchen_equipment TEXT, -- Free-form response about equipment
+  schedule_energy TEXT, -- Free-form response about schedule/energy
+  goals_challenges TEXT, -- Free-form response about goals
+  skills_comfort TEXT, -- Free-form response about skills
+  flavor_preferences TEXT, -- Free-form response about flavors
+  planning_style TEXT, -- Free-form response about planning
+  full_conversation JSONB DEFAULT '{}', -- Complete conversation history
+  
+  -- Meta fields
   onboarding_completed BOOLEAN DEFAULT FALSE,
   onboarding_date TIMESTAMPTZ,
-  profile_version TEXT DEFAULT '3.0',
+  profile_version TEXT DEFAULT '4.0',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

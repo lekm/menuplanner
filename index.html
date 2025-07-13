@@ -2775,69 +2775,25 @@
         async function startAIOnboarding(user) {
             onboardingConversation = [];
             onboardingStep = 0;
-            userOnboardingData = {};
+            userOnboardingData = {
+                name: user.user_metadata?.display_name || user.email.split('@')[0] || 'there',
+                responses: []
+            };
             
             // Clear chat
             document.getElementById('onboarding-chat').innerHTML = '';
-            updateOnboardingProgress(1, 7);
+            updateOnboardingProgress(1, 8);
             
-            const welcomeMessage = `👋 **Welcome to your personal meal planner!**
+            const welcomeMessage = `Hi ${userOnboardingData.name}! 👋 
 
-I'm here to help create a profile that perfectly matches your lifestyle and cooking needs. This quick setup will make your meal planning much more effective and personalized.
+I'm your AI cooking assistant, and I'm here to learn about your unique cooking situation so I can suggest recipes that actually work for your life.
 
-This takes about 3-4 minutes and covers everything from your cooking experience to your schedule preferences.
+Instead of boring multiple choice questions, let's have a real conversation. I'll ask you about your cooking experience, kitchen setup, dietary needs, and lifestyle - just like if we were chatting over coffee.
 
-**Let's start with the basics - tell me a bit about yourself:**`;
+**Let's start simple: Tell me about your current relationship with cooking. Are you someone who loves spending time in the kitchen, or do you find cooking more of a chore? What's your experience level like?**`;
             
             addOnboardingMessage('ai', welcomeMessage);
-            
-            // Show custom input form for basic info
-            const chatContainer = document.getElementById('onboarding-chat');
-            const formDiv = document.createElement('div');
-            formDiv.className = 'mb-6 text-left max-w-2xl';
-            formDiv.id = 'basic-info-form';
-            
-            formDiv.innerHTML = `
-                <div class="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">What should I call you?</label>
-                        <input type="text" id="user-display-name" placeholder="Enter your name or nickname" 
-                               value="${user.user_metadata?.display_name || user.email.split('@')[0] || ''}"
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">What's your age range? (helps with portion sizes and meal types)</label>
-                        <select id="user-age-range" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Select age range...</option>
-                            <option value="18-25">18-25</option>
-                            <option value="26-35">26-35</option>
-                            <option value="36-45">36-45</option>
-                            <option value="46-55">46-55</option>
-                            <option value="56-65">56-65</option>
-                            <option value="65+">65+</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Household size (how many people are you typically cooking for?)</label>
-                        <select id="household-size" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Select...</option>
-                            <option value="1">Just me</option>
-                            <option value="2">2 people</option>
-                            <option value="3-4">3-4 people</option>
-                            <option value="5+">5+ people</option>
-                        </select>
-                    </div>
-                    
-                    <button onclick="submitBasicInfo()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 mt-4">
-                        Continue →
-                    </button>
-                </div>
-            `;
-            
-            chatContainer.appendChild(formDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            showTextInput("Type your answer here... (e.g., 'I'm pretty new to cooking but want to learn' or 'I love cooking but I'm always short on time')");
         }
 
         function addOnboardingMessage(sender, message) {
@@ -2867,46 +2823,6 @@ This takes about 3-4 minutes and covers everything from your cooking experience 
             }
         }
 
-        function submitBasicInfo() {
-            const name = document.getElementById('user-display-name').value.trim();
-            const ageRange = document.getElementById('user-age-range').value;
-            const householdSize = document.getElementById('household-size').value;
-            
-            if (!name || !ageRange || !householdSize) {
-                alert('Please fill in all fields to continue.');
-                return;
-            }
-            
-            // Store basic info
-            userOnboardingData.displayName = name;
-            userOnboardingData.ageRange = ageRange;
-            userOnboardingData.householdSize = householdSize;
-            
-            // Remove the form
-            const form = document.getElementById('basic-info-form');
-            if (form) {
-                form.remove();
-            }
-            
-            // Add user's response summary
-            addOnboardingMessage('user', `Hi! I'm ${name}. I'm ${ageRange} years old and typically cook for ${householdSize === '1' ? 'just myself' : householdSize + ' people'}.`);
-            
-            // Continue to cooking experience
-            onboardingStep = 1;
-            updateOnboardingProgress(2, 7);
-            
-            const cookingMessage = `Nice to meet you, ${name}! 😊
-
-Now that I know a bit about you, let's talk about your **cooking experience level**. This helps me suggest recipes that match your skills and comfort in the kitchen:`;
-            
-            addOnboardingMessage('ai', cookingMessage);
-            showOnboardingOptions([
-                { text: "🌱 Beginner - Just starting my cooking journey", value: "beginner" },
-                { text: "⚡ Intermediate - Comfortable with basics, want to grow", value: "intermediate" },
-                { text: "🍳 Advanced - I love cooking and trying new techniques", value: "advanced" },
-                { text: "👨‍🍳 Expert - Cooking is my passion/profession", value: "expert" }
-            ]);
-        }
 
         function resetOnboarding() {
             if (confirm('Are you sure you want to restart the onboarding process?')) {
@@ -2933,22 +2849,97 @@ Now that I know a bit about you, let's talk about your **cooking experience leve
             }
         }
 
-        function showOnboardingOptions(options) {
+        function showTextInput(placeholder = "Type your response...") {
             const chatContainer = document.getElementById('onboarding-chat');
-            const optionsDiv = document.createElement('div');
-            optionsDiv.className = 'mb-6 text-left max-w-2xl';
-            optionsDiv.id = 'current-options';
             
-            options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.className = 'block w-full text-left p-4 mb-3 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-base font-medium shadow-sm hover:shadow-md';
-                button.innerHTML = option.text;
-                button.onclick = () => handleOnboardingChoice(option.value, option.text);
-                optionsDiv.appendChild(button);
+            // Remove any existing input
+            const existingInput = document.getElementById('onboarding-input');
+            if (existingInput) {
+                existingInput.remove();
+            }
+            
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'mb-6 text-left max-w-2xl';
+            inputDiv.id = 'onboarding-input';
+            
+            inputDiv.innerHTML = `
+                <div class="bg-white border-2 border-blue-200 rounded-xl p-4 shadow-sm">
+                    <textarea 
+                        id="user-response-input" 
+                        placeholder="${placeholder}"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        rows="3"
+                        style="min-height: 80px;"
+                    ></textarea>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-sm text-gray-500">Take your time - the more you tell me, the better I can help!</span>
+                        <button onclick="submitUserResponse()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                            Send →
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            chatContainer.appendChild(inputDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Focus the textarea
+            setTimeout(() => {
+                const textarea = document.getElementById('user-response-input');
+                if (textarea) {
+                    textarea.focus();
+                    // Add enter key handler
+                    textarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            submitUserResponse();
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        async function submitUserResponse() {
+            const textarea = document.getElementById('user-response-input');
+            const response = textarea.value.trim();
+            
+            if (!response) {
+                alert('Please type a response to continue.');
+                return;
+            }
+            
+            // Add user's response to chat
+            addOnboardingMessage('user', response);
+            
+            // Store the response
+            userOnboardingData.responses.push({
+                step: onboardingStep,
+                question: getCurrentQuestion(),
+                answer: response
             });
             
-            chatContainer.appendChild(optionsDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            // Remove input
+            const inputDiv = document.getElementById('onboarding-input');
+            if (inputDiv) {
+                inputDiv.remove();
+            }
+            
+            // Process the response with AI
+            await processConversationalResponse(response);
+        }
+
+        function getCurrentQuestion() {
+            const questions = [
+                "cooking relationship and experience",
+                "dietary restrictions and preferences", 
+                "kitchen equipment and tools",
+                "work schedule and energy patterns",
+                "cooking goals and challenges",
+                "knife skills and techniques",
+                "favorite cuisines and flavors",
+                "meal planning style"
+            ];
+            return questions[onboardingStep] || "general question";
         }
 
         async function handleOnboardingChoice(value, text) {
@@ -2965,119 +2956,93 @@ Now that I know a bit about you, let's talk about your **cooking experience leve
             await processOnboardingStep(value);
         }
 
-        async function processOnboardingStep(value) {
+        async function processConversationalResponse(userResponse) {
             onboardingStep++;
-            updateOnboardingProgress(onboardingStep + 1, 7);
+            updateOnboardingProgress(onboardingStep + 1, 8);
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            let nextQuestion = "";
+            let nextPlaceholder = "";
             
             switch(onboardingStep) {
-                case 2: // Cooking experience chosen
-                    userOnboardingData.experience = value;
-                    const dietaryMessage = `Great! ${value === 'expert' ? 'With your expertise, you\'ll love the advanced features!' : value === 'advanced' ? 'Perfect! You\'ll appreciate the variety of recipes available.' : value === 'intermediate' ? 'Excellent! You\'re ready to explore new techniques.' : 'That\'s wonderful - everyone starts somewhere!'}
-
-**Next, let's talk about your dietary preferences.** This helps me suggest meals that work for your lifestyle and any health goals:`;
-                    
-                    addOnboardingMessage('ai', dietaryMessage);
-                    showOnboardingOptions([
-                        { text: "🍖 No restrictions - I enjoy all types of food", value: "none" },
-                        { text: "🥬 Vegetarian - No meat, but dairy and eggs are fine", value: "vegetarian" },
-                        { text: "🌱 Vegan - Plant-based only", value: "vegan" },
-                        { text: "🌾 Gluten-free - Need to avoid gluten", value: "gluten-free" },
-                        { text: "🥗 Low-carb/Keto focused", value: "low-carb" },
-                        { text: "⚖️ Multiple restrictions (I'll specify later)", value: "multiple" }
-                    ]);
+                case 1: // After cooking experience response
+                    nextQuestion = await generateDietaryQuestion(userResponse);
+                    nextPlaceholder = "Tell me about any dietary needs, allergies, or food preferences you have...";
                     break;
                     
-                case 3: // Dietary preferences chosen
-                    userOnboardingData.dietary = value;
-                    const equipmentMessage = `Perfect! ${value === 'none' ? 'Having flexibility with ingredients makes meal planning easier.' : value === 'multiple' ? 'No worries - we can accommodate multiple dietary needs.' : 'I\'ll make sure to suggest recipes that fit your dietary preferences.'} 
-
-**Now, what does your kitchen setup look like?** This helps me recommend recipes that match your available tools:`;
-                    
-                    addOnboardingMessage('ai', equipmentMessage);
-                    showOnboardingOptions([
-                        { text: "🔥 Basic setup - Stove, oven, essential pans", value: "basic" },
-                        { text: "⚡ Well-equipped - Plus slow cooker, blender, stand mixer", value: "intermediate" },
-                        { text: "🏠 Fully loaded - Instant Pot, air fryer, food processor, the works!", value: "advanced" },
-                        { text: "🎒 Minimal - Limited space/equipment (dorm, small apartment)", value: "minimal" }
-                    ]);
+                case 2: // After dietary response  
+                    nextQuestion = await generateEquipmentQuestion(userResponse);
+                    nextPlaceholder = "List your kitchen tools, appliances, cookware - be specific! (e.g., 'I have a decent chef's knife, cast iron pan, Instant Pot, basic blender...')";
                     break;
                     
-                case 4: // Equipment chosen
-                    userOnboardingData.equipment = value;
-                    const scheduleMessage = `Excellent! ${value === 'advanced' ? 'With all that equipment, you can handle any recipe I suggest!' : value === 'minimal' ? 'No problem - some of the best meals come from simple setups!' : 'That\'s a great foundation for cooking.'}
-
-**Let's talk about your schedule and energy patterns.** Since everyone has different work schedules and energy levels throughout the week, this helps me suggest the right meals for the right times:`;
-                    
-                    addOnboardingMessage('ai', scheduleMessage);
-                    showOnboardingOptions([
-                        { text: "🌅 Regular 9-5 - Consistent daily schedule", value: "regular" },
-                        { text: "🌙 Night shifts - Work evenings/late nights", value: "night-shift" },
-                        { text: "🔄 Rotating schedule - Different shifts each week", value: "rotating" },
-                        { text: "📅 Irregular/freelance - Schedule varies daily", value: "irregular" }
-                    ]);
+                case 3: // After equipment response
+                    nextQuestion = await generateScheduleQuestion(userResponse);
+                    nextPlaceholder = "Describe your typical week - work schedule, busy periods, when you have time to cook...";
                     break;
                     
-                case 5: // Schedule chosen
-                    userOnboardingData.schedule = value;
-                    const energyMessage = `Got it! ${value === 'night-shift' ? 'Night shift work definitely affects when and how you want to cook.' : value === 'irregular' ? 'Having a flexible schedule means you need adaptable meal options.' : 'Understanding your rhythm helps me suggest meals at the right times.'}
-
-**Finally, let's talk about your typical cooking energy levels.** This app uses an energy-based system to match recipes to how you're feeling:`;
-                    
-                    addOnboardingMessage('ai', energyMessage);
-                    showOnboardingOptions([
-                        { text: "🚀 High Energy Days - Love cooking complex, multi-step meals", value: "high" },
-                        { text: "⚡ Medium Energy - Enjoy cooking but want reasonable prep time", value: "medium" },
-                        { text: "😴 Survival Mode - Need quick, minimal-effort options most days", value: "low" },
-                        { text: "🔄 It varies - Some days high energy, some days survival mode", value: "mixed" }
-                    ]);
+                case 4: // After schedule response
+                    nextQuestion = await generateGoalsQuestion(userResponse);
+                    nextPlaceholder = "What are you hoping to achieve with meal planning? What challenges do you face?";
                     break;
                     
-                case 6: // Energy preference chosen
-                    userOnboardingData.energyPreference = value;
-                    const mealPrepMessage = `Perfect! ${value === 'mixed' ? 'Having different energy levels is totally normal - I\'ll give you options for both.' : value === 'low' ? 'Nothing wrong with prioritizing efficiency - some of the best meals are simple ones!' : 'I love your enthusiasm for cooking!'}
-
-**One last question: How do you prefer to approach meal planning?**`;
-                    
-                    addOnboardingMessage('ai', mealPrepMessage);
-                    showOnboardingOptions([
-                        { text: "📦 Meal prep Sunday - Cook everything in advance", value: "batch-prep" },
-                        { text: "🥘 Daily fresh cooking - Cook each meal when I want it", value: "fresh-daily" },
-                        { text: "🔄 Mix of both - Some prep, some fresh cooking", value: "hybrid" },
-                        { text: "🎯 Ingredient prep - Prep ingredients, assemble meals later", value: "ingredient-prep" }
-                    ]);
+                case 5: // After goals response
+                    nextQuestion = await generateSkillsQuestion(userResponse);
+                    nextPlaceholder = "How comfortable are you with knife work, different cooking techniques, following recipes?";
                     break;
                     
-                case 7: // Meal prep style chosen
-                    userOnboardingData.mealPrepStyle = value;
-                    updateOnboardingProgress(7, 7);
-                    
-                    const finalMessage = `🎉 **Fantastic! Your profile is complete!**
-
-Based on your responses, I now understand:
-• You're **${userOnboardingData.displayName}** (${userOnboardingData.ageRange}) cooking for **${userOnboardingData.householdSize === '1' ? 'yourself' : userOnboardingData.householdSize + ' people'}**
-• Your **${userOnboardingData.experience}** cooking level
-• Your **${userOnboardingData.dietary === 'none' ? 'flexible' : userOnboardingData.dietary}** dietary preferences  
-• Your **${userOnboardingData.equipment}** kitchen setup
-• Your **${userOnboardingData.schedule}** work schedule
-• Your **${userOnboardingData.energyPreference}** energy patterns
-• Your **${userOnboardingData.mealPrepStyle}** meal planning style
-
-I'll use this to suggest recipes that perfectly match your lifestyle, energy levels, and available time. Ready to start planning some amazing meals?`;
-                    
-                    addOnboardingMessage('ai', finalMessage);
-                    
-                    // Show completion button
-                    const chatContainer = document.getElementById('onboarding-chat');
-                    const completeDiv = document.createElement('div');
-                    completeDiv.className = 'mb-6 text-center';
-                    const completeButton = document.createElement('button');
-                    completeButton.className = 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg';
-                    completeButton.textContent = '🎉 Start Planning My Meals!';
-                    completeButton.onclick = completeOnboarding;
-                    completeDiv.appendChild(completeButton);
-                    chatContainer.appendChild(completeDiv);
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                case 6: // After skills response
+                    nextQuestion = await generateCuisineQuestion(userResponse);
+                    nextPlaceholder = "What flavors, cuisines, or types of food do you gravitate toward?";
                     break;
+                    
+                case 7: // After cuisine response
+                    nextQuestion = await generateFinalQuestion(userResponse);
+                    nextPlaceholder = "How do you prefer to approach meal planning and prep?";
+                    break;
+                    
+                case 8: // Final response - complete onboarding
+                    hideTypingIndicator();
+                    await completeConversationalOnboarding();
+                    return;
+            }
+            
+            // Wait a bit to simulate AI thinking
+            setTimeout(() => {
+                hideTypingIndicator();
+                addOnboardingMessage('ai', nextQuestion);
+                showTextInput(nextPlaceholder);
+            }, 1500 + Math.random() * 1000); // 1.5-2.5 seconds
+        }
+
+        function showTypingIndicator() {
+            const chatContainer = document.getElementById('onboarding-chat');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'mb-4 text-left';
+            typingDiv.id = 'typing-indicator';
+            
+            typingDiv.innerHTML = `
+                <div class="inline-block p-4 rounded-xl bg-gray-100 text-gray-600 border border-gray-200">
+                    <div class="flex items-center gap-2">
+                        <div class="flex gap-1">
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                        </div>
+                        <span class="text-sm">AI is thinking...</span>
+                    </div>
+                </div>
+            `;
+            
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
             }
         }
 
@@ -3123,35 +3088,218 @@ I'll use this to suggest recipes that perfectly match your lifestyle, energy lev
             */
         }
 
+        // Intelligent question generation based on user responses
+        async function generateDietaryQuestion(cookingResponse) {
+            const response = cookingResponse.toLowerCase();
+            
+            if (response.includes('beginner') || response.includes('new') || response.includes('starting')) {
+                return `I can see you're getting started with cooking - that's exciting! 🌟 Learning to cook is such a rewarding journey.
+
+Since you're building your skills, it's important I know about any **dietary restrictions, allergies, or food preferences** you have. This way I can suggest recipes that are both beginner-friendly AND safe/enjoyable for you to eat.
+
+Do you have any foods you need to avoid, or particular preferences I should know about?`;
+            } else if (response.includes('love') || response.includes('passion') || response.includes('enjoy')) {
+                return `I love that enthusiasm for cooking! 🔥 There's nothing better than someone who truly enjoys time in the kitchen.
+
+Since you're passionate about cooking, I want to make sure I understand your **dietary landscape** - any restrictions, allergies, specific nutrition goals, or strong food preferences that guide your cooking choices?
+
+Even if you don't have restrictions, knowing what foods you gravitate toward helps me suggest recipes you'll actually want to make.`;
+            } else if (response.includes('time') || response.includes('busy') || response.includes('quick')) {
+                return `I totally get the time crunch - cooking when you're busy is a real challenge! ⏰
+
+Since time is a factor for you, it's even more important that I suggest recipes with ingredients you can actually eat and enjoy. No point spending your precious cooking time on something you can't have!
+
+**Tell me about any dietary restrictions, allergies, or food preferences** that would rule out certain ingredients or recipe types.`;
+            } else {
+                return `Thanks for sharing that context about your cooking experience! 
+
+Now I need to understand your **dietary needs and preferences**. This is crucial because there's no point suggesting amazing recipes if they contain ingredients you can't or won't eat.
+
+Do you have any dietary restrictions, food allergies, nutritional goals, or strong preferences I should know about?`;
+            }
+        }
+
+        async function generateEquipmentQuestion(dietaryResponse) {
+            const response = dietaryResponse.toLowerCase();
+            
+            if (response.includes('none') || response.includes('no restrictions') || response.includes('eat everything')) {
+                return `Perfect! Having flexibility with ingredients makes meal planning so much easier. 👍
+
+Now let's talk about your **kitchen setup**. This is where I can really help optimize your cooking experience. I don't just want to know "basic" or "advanced" - I want to know specifically what tools and appliances you have.
+
+**List out your kitchen equipment** - things like knives, pans, small appliances, anything you cook with. Be specific! For example: "I have a decent 8-inch chef's knife, one non-stick pan, a slow cooker, basic blender..." The more detail, the better I can match recipes to what you can actually make.`;
+            } else if (response.includes('vegetarian') || response.includes('vegan') || response.includes('plant')) {
+                return `Got it! Plant-based cooking opens up so many delicious possibilities. 🌱
+
+Since you'll be working with lots of vegetables, grains, and plant proteins, your **kitchen equipment** becomes really important. Different tools can make plant-based cooking much easier and more enjoyable.
+
+**Tell me specifically what kitchen tools and appliances you have available.** Things like: quality knives, cutting boards, pans, blenders, food processors, rice cookers, etc. Don't just say "basic" - list out what you actually own!`;
+            } else if (response.includes('allerg') || response.includes('gluten') || response.includes('sensitive')) {
+                return `I appreciate you sharing those dietary needs - managing allergies or sensitivities while cooking requires extra attention. 🩺
+
+Your **kitchen equipment** becomes even more important when you need to avoid cross-contamination or prepare foods in specific ways.
+
+**What cooking tools and appliances do you currently have?** Be specific about pans, knives, small appliances, etc. Also, do you have separate equipment for allergen-free cooking, or is that something we need to consider?`;
+            } else {
+                return `Thanks for the insight into your dietary preferences! That helps me understand what types of recipes will work for you.
+
+Now I need to know about your **kitchen equipment situation**. I'm not looking for vague categories here - I want to know exactly what tools and appliances you have to work with.
+
+**List your kitchen gear specifically** - knives, pans, appliances, anything you use for cooking. The more detailed you are, the better I can suggest recipes that match what you can actually make with your current setup.`;
+            }
+        }
+
+        async function generateScheduleQuestion(equipmentResponse) {
+            const response = equipmentResponse.toLowerCase();
+            
+            if (response.includes('instant pot') || response.includes('pressure cooker') || response.includes('slow cooker')) {
+                return `Nice! I see you have some great time-saving appliances there. Those can be game-changers for meal prep and busy schedules. 🍲
+
+Speaking of schedules - this is crucial for meal planning that actually works in real life. I need to understand **when you have time to cook, when you're busy, and what your energy levels are like** throughout the week.
+
+**Describe your typical schedule** - work hours, busy periods, when you get home, weekend availability. Also, are you someone who comes home exhausted, or do you have energy for cooking? Do you work shifts, have irregular hours, or a pretty predictable routine?`;
+            } else if (response.includes('minimal') || response.includes('basic') || response.includes('just') || response.includes('only')) {
+                return `I see you're working with a more minimal setup - that's totally doable! Some of the best meals come from simple tools and techniques. 🔥
+
+Since your equipment is limited, **your schedule and energy levels** become even more important for planning. I need to suggest recipes that work within both your equipment constraints AND your time/energy reality.
+
+**Tell me about your typical week** - when do you have time to cook? Are you usually tired when you get home, or do you have energy for food prep? Do you work standard hours, shifts, or something irregular?`;
+            } else if (response.includes('knife') && response.includes('good') || response.includes('sharp') || response.includes('decent')) {
+                return `Great to hear you have good knife skills covered! A sharp knife makes everything in the kitchen better. 🔪
+
+Now let's talk about **your schedule and energy patterns**. Even with good equipment, meal planning fails if it doesn't account for real life - work stress, busy periods, days when you just don't have it in you to cook.
+
+**What's your typical week like?** When do you have time to cook? Do you come home energized or exhausted? Are you working standard hours, night shifts, freelance schedule? Help me understand your rhythm so I can suggest meals that fit your actual life.`;
+            } else {
+                return `Thanks for that detailed equipment rundown! That gives me a good sense of what recipes are actually feasible for you.
+
+Now I need to understand **your schedule and energy patterns**. This is where meal planning gets real - it doesn't matter how good a recipe is if you don't have time or energy to make it.
+
+**Walk me through your typical week** - work schedule, busy periods, when you usually cook, how tired you are when you get home. Are you someone with steady energy, or does it vary a lot day to day?`;
+            }
+        }
+
+        async function generateGoalsQuestion(scheduleResponse) {
+            return `That schedule context is really helpful - I can already see some patterns that will influence what types of meals make sense for you. 📅
+
+Now let's get to the heart of why you're here: **What are you hoping to achieve with meal planning?** This isn't a generic question - I want to know YOUR specific goals and challenges.
+
+Maybe you want to eat healthier, save money, reduce food waste, spend less time deciding what to cook, meal prep for busy weeks, learn new skills, or something completely different. What's driving you to set up a meal planning system right now?`;
+        }
+
+        async function generateSkillsQuestion(goalsResponse) {
+            const response = goalsResponse.toLowerCase();
+            
+            if (response.includes('learn') || response.includes('skill') || response.includes('better') || response.includes('improve')) {
+                return `I love that you want to build your cooking skills! That's such a rewarding goal. 📈
+
+Since you're focused on learning, I need to understand **your current skill level** more specifically. Not just "beginner" or "intermediate" - but what you're actually comfortable with right now.
+
+**How confident are you with things like:** knife work and chopping, following complex recipes, timing multiple dishes, basic techniques like sautéing/roasting/braising? What feels easy vs. what feels intimidating? This helps me suggest recipes that stretch your skills without overwhelming you.`;
+            } else if (response.includes('time') || response.includes('quick') || response.includes('efficient') || response.includes('fast')) {
+                return `Totally understand the need for efficiency! Time is precious, and cooking shouldn't feel like a chore when you're already busy. ⏱️
+
+Since time is a priority, I need to know **what cooking skills you can deploy quickly** vs. what slows you down. No point suggesting 30-minute meals if chopping vegetables takes you 20 minutes!
+
+**How comfortable and fast are you with:** knife work, multitasking in the kitchen, following recipes without constantly checking, basic cooking techniques? What kitchen tasks feel smooth vs. which ones slow you down?`;
+            } else {
+                return `Those goals make a lot of sense! Understanding what you want to achieve helps me suggest the right types of recipes and planning approaches.
+
+Now I need to assess **your current cooking skills** more specifically. This isn't about labeling yourself - it's about understanding what techniques you're comfortable with so I can suggest appropriate recipes.
+
+**How confident are you with:** knife skills and prep work, following multi-step recipes, timing multiple components, various cooking methods (sautéing, roasting, etc.)? What feels natural vs. what still requires concentration?`;
+            }
+        }
+
+        async function generateCuisineQuestion(skillsResponse) {
+            return `That skill assessment is really useful - I can match recipe complexity to what you're comfortable with while maybe pushing you just slightly outside your comfort zone. 🎯
+
+Let's talk **flavors and cuisines**. This is where cooking gets fun! I don't want to just suggest "healthy chicken recipes" - I want to understand what actually excites your taste buds.
+
+**What flavors, cuisines, or types of food do you find yourself craving or ordering?** Are you drawn to spicy foods, comfort foods, fresh and light dishes, rich and hearty meals? Any particular cuisines that speak to you - or ones you're curious to try?`;
+        }
+
+        async function generateFinalQuestion(cuisineResponse) {
+            return `Excellent! Those flavor preferences give me a great direction for recipe suggestions. Food should be delicious, not just functional! 😋
+
+**Final question:** How do you want to approach the actual meal planning and prep? I'm not talking about your cooking skills - I mean your strategy for organizing meals throughout the week.
+
+Do you prefer to batch cook on weekends, cook fresh each day, prep ingredients in advance and assemble later, or some combination? What's worked for you before, and what definitely hasn't worked?`;
+        }
+
+        async function completeConversationalOnboarding() {
+            const responses = userOnboardingData.responses;
+            
+            // Create a comprehensive summary
+            const summaryMessage = `🎉 **Fantastic! I now have a complete picture of your cooking situation.**
+
+Here's what I learned about you:
+
+**Cooking Background:** ${responses[0]?.answer || 'Not specified'}
+
+**Dietary Needs:** ${responses[1]?.answer || 'Not specified'}
+
+**Kitchen Setup:** ${responses[2]?.answer || 'Not specified'}
+
+**Schedule & Energy:** ${responses[3]?.answer || 'Not specified'}
+
+**Goals & Challenges:** ${responses[4]?.answer || 'Not specified'}
+
+**Skills & Comfort Level:** ${responses[5]?.answer || 'Not specified'}
+
+**Flavor Preferences:** ${responses[6]?.answer || 'Not specified'}
+
+**Planning Style:** ${responses[7]?.answer || 'Not specified'}
+
+This detailed profile means I can suggest recipes that actually fit YOUR life - not generic meal plans that ignore your equipment, schedule, and preferences. Ready to start cooking?`;
+            
+            addOnboardingMessage('ai', summaryMessage);
+            
+            // Show completion button
+            const chatContainer = document.getElementById('onboarding-chat');
+            const completeDiv = document.createElement('div');
+            completeDiv.className = 'mb-6 text-center';
+            const completeButton = document.createElement('button');
+            completeButton.className = 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg';
+            completeButton.textContent = '🚀 Start My Personalized Meal Planning!';
+            completeButton.onclick = completeDetailedOnboarding;
+            completeDiv.appendChild(completeButton);
+            chatContainer.appendChild(completeDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
         function getFallbackResponse() {
             const fallbacks = [
-                "Great choice! Let's continue setting up your profile.",
-                "Perfect! That helps me understand your preferences better.",
-                "Excellent! This will help me suggest the best recipes for you.",
-                "Wonderful! We're almost done with your setup."
+                "That's really helpful information - let me ask you more about that.",
+                "I can see some patterns already that will help with suggestions.",
+                "Great details! This is exactly what I need to know.",
+                "Perfect! That gives me a much clearer picture."
             ];
             return fallbacks[Math.floor(Math.random() * fallbacks.length)];
         }
 
-        async function completeOnboarding() {
+        async function completeDetailedOnboarding() {
             try {
-                console.log('🔄 Starting onboarding completion...');
-                console.log('📊 User data to save:', userOnboardingData);
+                console.log('🔄 Starting conversational onboarding completion...');
+                console.log('📊 User responses:', userOnboardingData.responses);
                 
-                // Save comprehensive onboarding data to user profile
+                // Parse responses into structured data
+                const responses = userOnboardingData.responses;
                 const profileData = {
-                    display_name: userOnboardingData.displayName,
-                    age_range: userOnboardingData.ageRange,
-                    household_size: userOnboardingData.householdSize,
-                    cooking_experience: userOnboardingData.experience,
-                    dietary_restrictions: userOnboardingData.dietary === 'none' ? [] : [userOnboardingData.dietary],
-                    equipment_level: userOnboardingData.equipment,
-                    work_schedule: userOnboardingData.schedule,
-                    energy_preference: userOnboardingData.energyPreference,
-                    meal_prep_style: userOnboardingData.mealPrepStyle,
+                    display_name: userOnboardingData.name,
+                    onboarding_type: 'conversational',
+                    cooking_background: responses[0]?.answer || '',
+                    dietary_needs: responses[1]?.answer || '',
+                    kitchen_equipment: responses[2]?.answer || '',
+                    schedule_energy: responses[3]?.answer || '',
+                    goals_challenges: responses[4]?.answer || '',
+                    skills_comfort: responses[5]?.answer || '',
+                    flavor_preferences: responses[6]?.answer || '',
+                    planning_style: responses[7]?.answer || '',
+                    full_conversation: responses,
                     onboarding_completed: true,
                     onboarding_date: new Date().toISOString(),
-                    profile_version: '3.0' // Track profile schema version
+                    profile_version: '4.0' // Conversational version
                 };
 
                 console.log('💾 Profile data to save:', profileData);
@@ -3190,19 +3338,22 @@ I'll use this to suggest recipes that perfectly match your lifestyle, energy lev
                 // Fallback to localStorage if Supabase fails
                 try {
                     console.log('🔄 Falling back to localStorage...');
+                    const responses = userOnboardingData.responses;
                     const profileData = {
-                        display_name: userOnboardingData.displayName,
-                        age_range: userOnboardingData.ageRange,
-                        household_size: userOnboardingData.householdSize,
-                        cooking_experience: userOnboardingData.experience,
-                        dietary_restrictions: userOnboardingData.dietary === 'none' ? [] : [userOnboardingData.dietary],
-                        equipment_level: userOnboardingData.equipment,
-                        work_schedule: userOnboardingData.schedule,
-                        energy_preference: userOnboardingData.energyPreference,
-                        meal_prep_style: userOnboardingData.mealPrepStyle,
+                        display_name: userOnboardingData.name,
+                        onboarding_type: 'conversational',
+                        cooking_background: responses[0]?.answer || '',
+                        dietary_needs: responses[1]?.answer || '',
+                        kitchen_equipment: responses[2]?.answer || '',
+                        schedule_energy: responses[3]?.answer || '',
+                        goals_challenges: responses[4]?.answer || '',
+                        skills_comfort: responses[5]?.answer || '',
+                        flavor_preferences: responses[6]?.answer || '',
+                        planning_style: responses[7]?.answer || '',
+                        full_conversation: responses,
                         onboarding_completed: true,
                         onboarding_date: new Date().toISOString(),
-                        profile_version: '3.0'
+                        profile_version: '4.0'
                     };
                     
                     localStorage.setItem('userProfile', JSON.stringify(profileData));
