@@ -70,6 +70,7 @@ CREATE TABLE public.user_profiles (
   skills_comfort TEXT, -- Free-form response about skills
   flavor_preferences TEXT, -- Free-form response about flavors
   planning_style TEXT, -- Free-form response about planning
+  breakfast_preferences TEXT, -- Free-form response about breakfast routine and preferences
   
   full_conversation JSONB DEFAULT '{}', -- Complete conversation history
   

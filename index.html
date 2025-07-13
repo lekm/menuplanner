@@ -2798,7 +2798,7 @@
             
             // Clear chat
             document.getElementById('onboarding-chat').innerHTML = '';
-            updateOnboardingProgress(1, 11);
+            updateOnboardingProgress(1, 12);
             
             const welcomeMessage = `Hi ${userOnboardingData.name}! 👋 
 
@@ -2859,6 +2859,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     skills_comfort: 'Comfortable with simple recipes, want to learn new techniques',
                     flavor_preferences: 'Italian, Asian, comfort foods, not too spicy',
                     planning_style: 'Batch cook on weekends, quick assembly during week',
+                    breakfast_preferences: 'Light breakfast (toast, cereal, yogurt), Traditional breakfast around 7-9am',
                     onboarding_completed: true,
                     onboarding_date: new Date().toISOString(),
                     profile_version: '5.0'
@@ -3328,7 +3329,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
 
         async function processConversationalResponse(userResponse) {
             onboardingStep++;
-            updateOnboardingProgress(onboardingStep + 1, 11);
+            updateOnboardingProgress(onboardingStep + 1, 12);
             
             // Show typing indicator
             showTypingIndicator();
@@ -3513,11 +3514,32 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     return;
                     
                 case 10: // After planning response
+                    nextQuestion = await generateBreakfastQuestion(userResponse);
+                    // Show quick-select for breakfast preferences
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'I\'m a coffee-only person in the morning',
+                            'Light breakfast (toast, cereal, yogurt)',
+                            'Big hearty breakfast (eggs, bacon, pancakes)',
+                            'Intermittent fasting - I skip breakfast',
+                            'Protein smoothie or shake',
+                            'Grab-and-go options (bars, fruit)',
+                            'Meal prep breakfast bowls',
+                            'Traditional breakfast around 7-9am',
+                            'Brunch-style late morning meal',
+                            'It varies day to day'
+                        ], "Tell me about your breakfast routine and preferences...", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
+                    
+                case 11: // After breakfast response
                     nextQuestion = await generateFinalQuestion(userResponse);
                     nextPlaceholder = "Any final thoughts, specific needs, or things I should know to help you succeed?";
                     break;
                     
-                case 11: // Final response - complete onboarding
+                case 12: // Final response - complete onboarding
                     hideTypingIndicator();
                     await completeConversationalOnboarding();
                     return;
@@ -3841,7 +3863,14 @@ Let's talk **flavors and cuisines**. This is where cooking gets fun! I don't wan
 Do you prefer to batch cook on weekends, cook fresh each day, prep ingredients in advance and assemble later, or some combination? What's worked for you before, and what definitely hasn't worked?`;
         }
 
-        async function generateFinalQuestion(planningResponse) {
+        async function generateBreakfastQuestion(planningResponse) {
+            return `Great approach to meal planning! Now let's talk about **breakfast** - this is where people have wildly different routines and preferences. 🌅
+
+**What's your relationship with breakfast?** Are you someone who needs coffee and nothing else until 11am? Do you practice intermittent fasting? Are you a big breakfast person who wants eggs and bacon? Or maybe you're somewhere in between with grab-and-go options?
+
+I'm asking because breakfast can really set the tone for your whole day's eating pattern, and I want to make sure your meal plans work with your natural morning routine - not against it!`;
+        }
+        async function generateFinalQuestion(breakfastResponse) {
             return `Perfect! I think I have a really solid understanding of your situation now. 🎯
 
 **One last thing:** Is there anything else I should know to help you succeed with meal planning? 
