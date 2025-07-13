@@ -7,7 +7,7 @@ class BugReportSystem {
     }
 
     async initializeEmailJS() {
-        const userId = import.meta?.env?.VITE_EMAILJS_USER_ID || window.VITE_EMAILJS_USER_ID;
+        const userId = window.VITE_EMAILJS_USER_ID;
         
         if (userId) {
             try {
@@ -47,8 +47,8 @@ class BugReportSystem {
             throw new Error('EmailJS not initialized');
         }
 
-        const serviceId = import.meta?.env?.VITE_EMAILJS_SERVICE_ID || window.VITE_EMAILJS_SERVICE_ID;
-        const templateId = import.meta?.env?.VITE_EMAILJS_TEMPLATE_ID || window.VITE_EMAILJS_TEMPLATE_ID;
+        const serviceId = window.VITE_EMAILJS_SERVICE_ID;
+        const templateId = window.VITE_EMAILJS_TEMPLATE_ID;
 
         if (!serviceId || !templateId) {
             throw new Error('EmailJS service or template ID not configured');

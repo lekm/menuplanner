@@ -1497,8 +1497,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Wait for API to initialize
             setTimeout(() => {
-                const user = window.mealPlannerAPI.getCurrentUser();
-                updateAuthUI(user);
+                if (window.mealPlannerAPI) {
+                    const user = window.mealPlannerAPI.getCurrentUser();
+                    updateAuthUI(user);
+                } else {
+                    console.error('MealPlannerAPI not loaded');
+                }
             }, 1000);
         });
     </script>

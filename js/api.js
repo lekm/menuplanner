@@ -11,8 +11,8 @@ class MealPlannerAPI {
 
     async initializeSupabase() {
         // Check if Supabase is configured
-        const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || window.VITE_SUPABASE_URL;
-        const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || window.VITE_SUPABASE_ANON_KEY;
+        const supabaseUrl = window.VITE_SUPABASE_URL;
+        const supabaseKey = window.VITE_SUPABASE_ANON_KEY;
         
         console.log('🔍 Supabase init debug:');
         console.log('  URL:', supabaseUrl);
