@@ -2032,11 +2032,7 @@
             }
         }
 
-        // Listen for auth state changes
-        window.addEventListener('authStateChange', (event) => {
-            const { user } = event.detail;
-            updateAuthUI(user);
-        });
+        // Note: Primary auth state change handler is defined at the bottom to handle onboarding
 
         function updateAuthUI(user) {
             const loginBtn = document.getElementById('login-btn');
@@ -2712,6 +2708,14 @@
 
         async function checkOnboardingStatus(user) {
             try {
+                // If onboarding was just completed in this session, skip check
+                if (onboardingCompleted) {
+                    console.log('🎯 Onboarding completed in this session, showing app...');
+                    hideAuthGate();
+                    switchTab('planner');
+                    return;
+                }
+                
                 const profile = await window.mealPlannerAPI.getUserProfile();
                 
                 // Check if user needs onboarding (no profile or incomplete profile)
@@ -2771,6 +2775,7 @@
         let onboardingConversation = [];
         let onboardingStep = 0;
         let userOnboardingData = {};
+        let onboardingCompleted = false; // Flag to prevent restart loops
 
         async function startAIOnboarding(user) {
             onboardingConversation = [];
@@ -2829,6 +2834,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                 onboardingConversation = [];
                 onboardingStep = 0;
                 userOnboardingData = {};
+                onboardingCompleted = false; // Reset completion flag
                 const user = window.mealPlannerAPI.getCurrentUser();
                 if (user) {
                     startAIOnboarding(user);
@@ -3309,16 +3315,25 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                     console.log('⚠️ Supabase not available, saving to localStorage');
                     localStorage.setItem('userProfile', JSON.stringify(profileData));
                     
+                    // Set completion flag to prevent restart
+                    onboardingCompleted = true;
+                    
                     // Hide onboarding modal
                     document.getElementById('onboarding-modal').classList.add('hidden');
                     showOnboardingComplete();
-                    setTimeout(() => switchTab('planner'), 2000);
+                    setTimeout(() => {
+                        hideAuthGate();
+                        switchTab('planner');
+                    }, 2000);
                     return;
                 }
 
                 console.log('☁️ Saving to Supabase...');
                 const result = await window.mealPlannerAPI.updateUserProfile(profileData);
                 console.log('✅ Profile saved successfully:', result);
+                
+                // Set completion flag to prevent restart
+                onboardingCompleted = true;
                 
                 // Hide onboarding modal
                 document.getElementById('onboarding-modal').classList.add('hidden');
@@ -3328,6 +3343,7 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                 
                 // Switch to planner after a brief delay
                 setTimeout(() => {
+                    hideAuthGate();
                     switchTab('planner');
                 }, 2000);
                 
@@ -3359,10 +3375,16 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                     localStorage.setItem('userProfile', JSON.stringify(profileData));
                     console.log('✅ Saved to localStorage as fallback');
                     
+                    // Set completion flag to prevent restart
+                    onboardingCompleted = true;
+                    
                     // Hide onboarding modal
                     document.getElementById('onboarding-modal').classList.add('hidden');
                     showOnboardingComplete();
-                    setTimeout(() => switchTab('planner'), 2000);
+                    setTimeout(() => {
+                        hideAuthGate();
+                        switchTab('planner');
+                    }, 2000);
                     
                 } catch (fallbackError) {
                     console.error('❌ Even localStorage failed:', fallbackError);
