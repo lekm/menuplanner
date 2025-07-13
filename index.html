@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weekly Meal Planner</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuration -->
+    <script>
+    // EmailJS configuration
+    window.VITE_EMAILJS_USER_ID = 'yyKfiq-hIQgATGWPi';
+    window.VITE_EMAILJS_SERVICE_ID = 'service_0jfc4xc';
+    window.VITE_EMAILJS_TEMPLATE_ID = 'template_0ta7il9';
+    
+    // Supabase configuration
+    window.VITE_SUPABASE_URL = 'https://vriusyvuqwlozqqcpbke.supabase.co';
+    window.VITE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXVzeXZ1cXdsb3pxcWNwYmtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTQwMDEsImV4cCI6MjA2Nzk3MDAwMX0.AoKGvVhxDzAaYOAgSVwt4Jhve9-Ck4o2BiD3iHiV8oE';
+    </script>
+    
+    <!-- Load our API layer and bug reporting system -->
+    <script src="js/api.js"></script>
+    <script src="js/bug-report.js"></script>
     <style>
     @keyframes pulse {
       0%, 100% {
@@ -22,7 +38,36 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="w-full px-2 py-4">
-        <h1 class="text-2xl md:text-4xl font-bold text-center text-gray-800 mb-4">Weekly Meal Planner</h1>
+        <!-- Header with Auth -->
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl md:text-4xl font-bold text-gray-800">Weekly Meal Planner</h1>
+            
+            <!-- Auth Section -->
+            <div id="auth-section" class="flex items-center gap-2">
+                <!-- User Info (when logged in) -->
+                <div id="user-info" class="hidden flex items-center gap-2">
+                    <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 rounded-full hidden">
+                    <span id="user-name" class="text-sm text-gray-700"></span>
+                    <button onclick="showUserMenu()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Login Button (when not logged in) -->
+                <button id="login-btn" onclick="showAuthModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded text-sm transition duration-200">
+                    Login
+                </button>
+                
+                <!-- Bug Report Button -->
+                <button onclick="showBugReportModal()" title="Report a bug or request a feature" class="text-gray-500 hover:text-gray-700 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
         
         <!-- Navigation Tabs -->
         <div class="flex justify-center mb-6">
@@ -497,6 +542,144 @@
                 
                 <div id="recipe-picker-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Recipe options will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Modal -->
+        <div id="auth-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Welcome to Meal Planner</h3>
+                    <button onclick="hideAuthModal()" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                </div>
+
+                <!-- Auth Tabs -->
+                <div class="flex mb-4 border-b">
+                    <button onclick="showAuthTab('login')" id="login-tab" class="flex-1 py-2 px-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
+                        Login
+                    </button>
+                    <button onclick="showAuthTab('signup')" id="signup-tab" class="flex-1 py-2 px-4 text-sm font-medium text-gray-500">
+                        Sign Up
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form">
+                    <form id="login-form-element" onsubmit="handleEmailSignIn(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="login-email" required class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" id="login-password" required class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 mb-3">
+                            Login
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mb-3">
+                        <span class="text-sm text-gray-500">or</span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <button onclick="signInWithProvider('google')" class="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Continue with Google
+                        </button>
+                        <button onclick="signInWithProvider('github')" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            Continue with GitHub
+                        </button>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button onclick="showForgotPassword()" class="text-sm text-blue-600 hover:text-blue-800">
+                            Forgot password?
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sign Up Form -->
+                <div id="signup-form" class="auth-form hidden">
+                    <form id="signup-form-element" onsubmit="handleEmailSignUp(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
+                            <input type="text" id="signup-name" required class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="signup-email" required class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" id="signup-password" required minlength="6" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                            <div class="text-xs text-gray-500 mt-1">At least 6 characters</div>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 mb-3">
+                            Create Account
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mb-3">
+                        <span class="text-sm text-gray-500">or</span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <button onclick="signInWithProvider('google')" class="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Sign up with Google
+                        </button>
+                        <button onclick="signInWithProvider('github')" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            Sign up with GitHub
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Auth Messages -->
+                <div id="auth-message" class="hidden mt-4 p-3 rounded-md">
+                    <div id="auth-message-text" class="text-sm"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Menu Dropdown -->
+        <div id="user-menu" class="hidden fixed top-16 right-4 bg-white rounded-lg shadow-lg border z-50 min-w-48">
+            <div class="py-2">
+                <div class="px-4 py-2 border-b">
+                    <div class="text-sm font-medium text-gray-900" id="menu-user-name"></div>
+                    <div class="text-sm text-gray-500" id="menu-user-email"></div>
+                </div>
+                <button onclick="showProfileModal()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    ⚙️ Profile Settings
+                </button>
+                <button onclick="exportData()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    📤 Export Data
+                </button>
+                <button onclick="importData()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    📥 Import Data
+                </button>
+                <div class="border-t">
+                    <button onclick="signOut()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                        🚪 Sign Out
+                    </button>
                 </div>
             </div>
         </div>
@@ -1100,6 +1283,195 @@
                 suggestedBtn.style.boxShadow = '0 0 0 2px #3b82f6';
                 suggestedBtn.style.animation = 'pulse 2s infinite';
             }
+        });
+
+        // ===== Authentication Functions =====
+        
+        function showAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                showAuthTab('login');
+            }
+        }
+
+        function hideAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function showAuthTab(tab) {
+            const loginTab = document.getElementById('login-tab');
+            const signupTab = document.getElementById('signup-tab');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+
+            if (tab === 'login') {
+                loginTab.classList.add('bg-blue-500', 'text-white');
+                loginTab.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                signupTab.classList.remove('bg-blue-500', 'text-white');
+                signupTab.classList.add('text-gray-700', 'hover:bg-gray-100');
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+            } else {
+                signupTab.classList.add('bg-blue-500', 'text-white');
+                signupTab.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                loginTab.classList.remove('bg-blue-500', 'text-white');
+                loginTab.classList.add('text-gray-700', 'hover:bg-gray-100');
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+        }
+
+        async function signInWithProvider(provider) {
+            try {
+                const result = await window.mealPlannerAPI.signInWithProvider(provider);
+                console.log('OAuth sign in initiated:', result);
+                hideAuthModal();
+            } catch (error) {
+                console.error('OAuth sign in failed:', error);
+                alert('Sign in failed. Please check your internet connection and try again.');
+            }
+        }
+
+        async function handleEmailSignIn(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const result = await window.mealPlannerAPI.signIn(email, password);
+                console.log('Email sign in successful:', result);
+                hideAuthModal();
+            } catch (error) {
+                console.error('Email sign in failed:', error);
+                alert('Sign in failed: ' + error.message);
+            }
+        }
+
+        async function handleEmailSignUp(event) {
+            event.preventDefault();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const displayName = document.getElementById('signup-name').value;
+
+            try {
+                const result = await window.mealPlannerAPI.signUp(email, password, {
+                    display_name: displayName
+                });
+                console.log('Email sign up successful:', result);
+                hideAuthModal();
+                alert('Account created! Please check your email to verify your account.');
+            } catch (error) {
+                console.error('Email sign up failed:', error);
+                alert('Sign up failed: ' + error.message);
+            }
+        }
+
+        function showUserMenu() {
+            // Simple toggle for now - could be enhanced with a proper dropdown
+            const user = window.mealPlannerAPI.getCurrentUser();
+            if (user) {
+                const options = [
+                    'Profile Settings',
+                    'Migrate Local Data',
+                    'Sign Out'
+                ];
+                
+                const choice = prompt('User Menu:\n' + options.map((opt, i) => `${i + 1}. ${opt}`).join('\n') + '\n\nEnter choice (1-3):');
+                
+                switch(choice) {
+                    case '1':
+                        // Profile settings - could open a modal in the future
+                        alert('Profile settings coming soon!');
+                        break;
+                    case '2':
+                        migrateLocalData();
+                        break;
+                    case '3':
+                        signOut();
+                        break;
+                }
+            }
+        }
+
+        async function signOut() {
+            try {
+                await window.mealPlannerAPI.signOut();
+                console.log('Signed out successfully');
+            } catch (error) {
+                console.error('Sign out failed:', error);
+            }
+        }
+
+        async function migrateLocalData() {
+            try {
+                await window.mealPlannerAPI.migrateLocalStorageToSupabase();
+                alert('Local data migrated successfully! Your recipes and meal plans are now saved to your account.');
+                location.reload(); // Refresh to load cloud data
+            } catch (error) {
+                console.error('Migration failed:', error);
+                alert('Migration failed: ' + error.message);
+            }
+        }
+
+        // Listen for auth state changes
+        window.addEventListener('authStateChange', (event) => {
+            const { user } = event.detail;
+            updateAuthUI(user);
+        });
+
+        function updateAuthUI(user) {
+            const loginBtn = document.getElementById('login-btn');
+            const userInfo = document.getElementById('user-info');
+            const userName = document.getElementById('user-name');
+            const userAvatar = document.getElementById('user-avatar');
+
+            if (user) {
+                // User is signed in
+                loginBtn.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                userInfo.classList.add('flex');
+                
+                userName.textContent = user.user_metadata?.display_name || user.email;
+                
+                if (user.user_metadata?.avatar_url) {
+                    userAvatar.src = user.user_metadata.avatar_url;
+                    userAvatar.classList.remove('hidden');
+                } else {
+                    userAvatar.classList.add('hidden');
+                }
+            } else {
+                // User is signed out
+                loginBtn.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+                userInfo.classList.remove('flex');
+            }
+        }
+
+        function showForgotPassword() {
+            const email = prompt('Enter your email address for password reset:');
+            if (email) {
+                window.mealPlannerAPI.resetPassword(email)
+                    .then(() => {
+                        alert('Password reset email sent! Please check your inbox.');
+                    })
+                    .catch((error) => {
+                        console.error('Password reset failed:', error);
+                        alert('Password reset failed: ' + error.message);
+                    });
+            }
+        }
+
+        // Initialize auth UI on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait for API to initialize
+            setTimeout(() => {
+                const user = window.mealPlannerAPI.getCurrentUser();
+                updateAuthUI(user);
+            }, 1000);
         });
     </script>
 </body>

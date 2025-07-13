@@ -39,6 +39,19 @@ A comprehensive meal planning app designed for busy professionals with energy-ba
 - **Flexible Text Sizing**: Adapts to different screen sizes
 - **Mobile Gestures**: Smooth interactions on touch devices
 
+### 🔐 **User Authentication & Cloud Sync**
+- **Multiple Login Options**: Email/password, Google OAuth, or GitHub OAuth
+- **Cloud Storage**: Save your recipes and meal plans to your personal account
+- **Data Migration**: Seamlessly migrate existing local data to your cloud account
+- **Multi-Device Access**: Access your meal plans from any device
+- **Privacy-First**: Your data is private and only accessible to you
+
+### 🐛 **Built-in Bug Reporting**
+- **One-Click Bug Reports**: Report issues directly from the app
+- **Feature Requests**: Suggest new features through the built-in form
+- **System Information**: Automatically captures browser and system details
+- **Developer Feedback**: Direct communication channel for improvements
+
 ## Meal Suggestions Include
 
 ### High Energy 🚀
@@ -85,9 +98,21 @@ A comprehensive meal planning app designed for busy professionals with energy-ba
 
 ## Technical Details
 
+- **Scalable Architecture**: Designed to grow from simple local storage to full cloud integration
+- **Optional Cloud Backend**: Uses Supabase for authentication and data storage when configured
+- **Graceful Degradation**: Works offline with localStorage when cloud services are unavailable
 - **Zero Configuration Deployment**: Works on Vercel, Netlify, or any static host
-- **Local Storage**: All data saved locally in your browser
-- **No Backend Required**: Completely client-side application
 - **Progressive Web App Ready**: Can be installed on mobile devices
+- **Privacy-First Design**: Row Level Security ensures your data remains private
 
-Built with HTML, CSS (Tailwind), and JavaScript.
+### Tech Stack
+- **Frontend**: HTML, CSS (Tailwind), Vanilla JavaScript
+- **Authentication**: Supabase Auth with OAuth support
+- **Database**: PostgreSQL with Row Level Security (when using Supabase)
+- **Bug Reporting**: EmailJS for direct developer communication
+- **Deployment**: Static hosting compatible (Vercel, Netlify, GitHub Pages)
+
+### Setup Requirements
+- **Basic Use**: No setup required - works immediately with localStorage
+- **Cloud Features**: Requires Supabase project setup (see SETUP.md)
+- **Bug Reporting**: Requires EmailJS configuration (see SETUP.md)
