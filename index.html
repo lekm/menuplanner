@@ -2873,6 +2873,22 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     onboardingCompleted = true;
                     sessionStorage.setItem('onboardingCompleted', 'true');
                     
+                    // Generate test meal plan
+                    const testMealPlan = generateMealSuggestions({
+                        breakfast: 'Light breakfast (toast, cereal, yogurt)',
+                        cuisine: 'Italian, Asian, comfort foods',
+                        dietary: 'No major restrictions',
+                        level: 'Beginner level, comfortable with basics',
+                        planning: 'Batch cook on weekends'
+                    });
+                    
+                    // Save test meal suggestions
+                    const currentPlan = await window.mealPlannerAPI.getMealPlan();
+                    const enhancedPlan = { ...currentPlan };
+                    enhancedPlan['monday'] = { breakfast: testMealPlan.breakfast[0], lunch: testMealPlan.lunch[0], dinner: testMealPlan.dinner[0] };
+                    enhancedPlan['tuesday'] = { breakfast: testMealPlan.breakfast[1] || testMealPlan.breakfast[0], lunch: testMealPlan.lunch[1] || testMealPlan.lunch[0], dinner: testMealPlan.dinner[1] || testMealPlan.dinner[0] };
+                    await window.mealPlannerAPI.saveMealPlan(enhancedPlan);
+                    
                     // Update auth UI to show user info
                     updateAuthUI(user);
                     
@@ -2892,6 +2908,22 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     localStorage.setItem('userProfile', JSON.stringify(testProfileData));
                     onboardingCompleted = true;
                     sessionStorage.setItem('onboardingCompleted', 'true');
+                    
+                    // Generate test meal plan (fallback case)
+                    const testMealPlan = generateMealSuggestions({
+                        breakfast: 'Light breakfast (toast, cereal, yogurt)',
+                        cuisine: 'Italian, Asian, comfort foods',
+                        dietary: 'No major restrictions',
+                        level: 'Beginner level, comfortable with basics',
+                        planning: 'Batch cook on weekends'
+                    });
+                    
+                    // Save test meal suggestions to localStorage
+                    const enhancedPlan = { 
+                        monday: { breakfast: testMealPlan.breakfast[0], lunch: testMealPlan.lunch[0], dinner: testMealPlan.dinner[0] },
+                        tuesday: { breakfast: testMealPlan.breakfast[1] || testMealPlan.breakfast[0], lunch: testMealPlan.lunch[1] || testMealPlan.lunch[0], dinner: testMealPlan.dinner[1] || testMealPlan.dinner[0] }
+                    };
+                    localStorage.setItem('mealPlan', JSON.stringify(enhancedPlan));
                     
                     // Update auth UI to show user info
                     updateAuthUI(user);
@@ -3921,10 +3953,117 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
             const completeButton = document.createElement('button');
             completeButton.className = 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg';
             completeButton.textContent = '🚀 Start My Personalized Meal Planning!';
-            completeButton.onclick = completeDetailedOnboarding;
+            completeButton.onclick = async () => {
+                // Replace button with loading message
+                completeButton.disabled = true;
+                completeButton.textContent = '🧠 Generating your personalized meal plan...';
+                
+                // Generate meal suggestions
+                await generateAndSaveMealPlan();
+                
+                // Then complete onboarding
+                completeDetailedOnboarding();
+            };
             completeDiv.appendChild(completeButton);
             chatContainer.appendChild(completeDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function generateAndSaveMealPlan() {
+            try {
+                const responses = userOnboardingData.responses;
+                
+                // Extract key preferences
+                const breakfastPref = responses[10]?.answer || 'Traditional breakfast';
+                const cuisinePrefs = responses[8]?.answer || '';
+                const dietaryNeeds = responses[3]?.answer || '';
+                const cookingLevel = responses[2]?.answer || '';
+                const planningStyle = responses[9]?.answer || '';
+                
+                // Generate meal suggestions based on their actual preferences
+                const mealSuggestions = generateMealSuggestions({
+                    breakfast: breakfastPref,
+                    cuisine: cuisinePrefs,
+                    dietary: dietaryNeeds,
+                    level: cookingLevel,
+                    planning: planningStyle
+                });
+                
+                // Save suggestions to current meal plan
+                const currentPlan = await window.mealPlannerAPI.getMealPlan();
+                const enhancedPlan = { ...currentPlan };
+                
+                // Populate Monday as an example
+                enhancedPlan['monday'] = enhancedPlan['monday'] || {};
+                enhancedPlan['monday']['breakfast'] = mealSuggestions.breakfast[0] || '';
+                enhancedPlan['monday']['lunch'] = mealSuggestions.lunch[0] || '';
+                enhancedPlan['monday']['dinner'] = mealSuggestions.dinner[0] || '';
+                
+                // Populate Tuesday with different options
+                enhancedPlan['tuesday'] = enhancedPlan['tuesday'] || {};
+                enhancedPlan['tuesday']['breakfast'] = mealSuggestions.breakfast[1] || mealSuggestions.breakfast[0] || '';
+                enhancedPlan['tuesday']['lunch'] = mealSuggestions.lunch[1] || mealSuggestions.lunch[0] || '';
+                enhancedPlan['tuesday']['dinner'] = mealSuggestions.dinner[1] || mealSuggestions.dinner[0] || '';
+                
+                await window.mealPlannerAPI.saveMealPlan(enhancedPlan);
+                
+                // Show success message
+                addOnboardingMessage('ai', `🎉 **Perfect! I've created personalized meal suggestions and added them to your planner.**
+
+**Based on your preferences, I've suggested:**
+- **Breakfast:** ${mealSuggestions.breakfast.join(' or ')}
+- **Lunch:** ${mealSuggestions.lunch.join(' or ')}  
+- **Dinner:** ${mealSuggestions.dinner.join(' or ')}
+
+These suggestions consider your cooking level, dietary needs, flavor preferences, and breakfast routine. You can modify or replace any of these once you start planning!`);
+                
+                return mealSuggestions;
+                
+            } catch (error) {
+                console.error('Error generating meal plan:', error);
+                addOnboardingMessage('ai', '✅ **Your profile has been saved!** I\'ll have personalized suggestions ready for you once you start planning.');
+                return null;
+            }
+        }
+
+        function generateMealSuggestions(preferences) {
+            const { breakfast, cuisine, dietary, level, planning } = preferences;
+            
+            // Breakfast suggestions based on their stated preference
+            let breakfastOptions = ['Oatmeal with berries', 'Greek yogurt with granola'];
+            if (breakfast.toLowerCase().includes('coffee') || breakfast.toLowerCase().includes('skip')) {
+                breakfastOptions = ['Coffee only', 'Optional: fruit or yogurt'];
+            } else if (breakfast.toLowerCase().includes('big') || breakfast.toLowerCase().includes('hearty')) {
+                breakfastOptions = ['Scrambled eggs with toast', 'Pancakes with bacon'];
+            } else if (breakfast.toLowerCase().includes('light')) {
+                breakfastOptions = ['Toast with avocado', 'Cereal with fruit'];
+            } else if (breakfast.toLowerCase().includes('smoothie')) {
+                breakfastOptions = ['Protein smoothie', 'Green smoothie with spinach'];
+            }
+            
+            // Lunch suggestions based on cooking level and dietary needs
+            let lunchOptions = ['Chicken salad wrap', 'Pasta with vegetables'];
+            if (level.toLowerCase().includes('beginner')) {
+                lunchOptions = ['Sandwich and soup', 'Salad with protein'];
+            } else if (dietary.toLowerCase().includes('vegetarian')) {
+                lunchOptions = ['Veggie wrap', 'Quinoa bowl'];
+            }
+            
+            // Dinner suggestions based on cuisine preferences and cooking level
+            let dinnerOptions = ['Grilled chicken with rice', 'Simple stir-fry'];
+            if (cuisine.toLowerCase().includes('italian')) {
+                dinnerOptions = ['Spaghetti with marinara', 'Chicken parmesan'];
+            } else if (cuisine.toLowerCase().includes('asian')) {
+                dinnerOptions = ['Teriyaki chicken bowl', 'Fried rice with vegetables'];
+            } else if (level.toLowerCase().includes('beginner')) {
+                dinnerOptions = ['One-pot pasta', 'Sheet pan chicken and vegetables'];
+            }
+            
+            return {
+                breakfast: breakfastOptions,
+                lunch: lunchOptions,
+                dinner: dinnerOptions
+            };
         }
 
         function getFallbackResponse() {
@@ -3958,6 +4097,7 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                     skills_comfort: responses[7]?.answer || '',
                     flavor_preferences: responses[8]?.answer || '',
                     planning_style: responses[9]?.answer || '',
+                    breakfast_preferences: responses[10]?.answer || '',
                     full_conversation: responses,
                     onboarding_completed: true,
                     onboarding_date: new Date().toISOString(),
@@ -4035,6 +4175,7 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                         skills_comfort: responses[7]?.answer || '',
                         flavor_preferences: responses[8]?.answer || '',
                         planning_style: responses[9]?.answer || '',
+                        breakfast_preferences: responses[10]?.answer || '',
                         full_conversation: responses,
                         onboarding_completed: true,
                         onboarding_date: new Date().toISOString(),
