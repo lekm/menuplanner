@@ -45,7 +45,7 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <div class="w-full px-2 py-4">
+    <div id="main-app" class="w-full px-2 py-4 hidden">
         <!-- Header with Auth -->
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl md:text-4xl font-bold text-gray-800">Weekly Meal Planner</h1>
@@ -976,7 +976,7 @@
         </div>
 
         <!-- Authentication Gate -->
-        <div id="auth-gate" class="hidden fixed inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center z-50">
+        <div id="auth-gate" class="fixed inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center z-50">
             <div class="max-w-md w-full mx-4">
                 <div class="text-center text-white mb-8">
                     <div class="text-6xl mb-4">🍽️</div>
@@ -2643,10 +2643,13 @@
         }
 
         function showAuthGate() {
-            // Hide main content
-            document.querySelectorAll('[id$="-content"]').forEach(el => el.classList.add('hidden'));
+            // Hide main app
+            const mainApp = document.getElementById('main-app');
+            if (mainApp) {
+                mainApp.classList.add('hidden');
+            }
             
-            // Show auth gate
+            // Show auth gate (it's visible by default now, but ensure it's shown)
             const authGate = document.getElementById('auth-gate');
             if (authGate) {
                 authGate.classList.remove('hidden');
@@ -2655,8 +2658,12 @@
 
         function hideAuthGate() {
             const authGate = document.getElementById('auth-gate');
+            const mainApp = document.getElementById('main-app');
             if (authGate) {
                 authGate.classList.add('hidden');
+            }
+            if (mainApp) {
+                mainApp.classList.remove('hidden');
             }
         }
 
@@ -2953,15 +2960,17 @@ Let's start with the basics - what's your cooking experience level?`;
 
         // Initialize auth UI on page load
         document.addEventListener('DOMContentLoaded', () => {
-            // Wait for API to initialize
-            setTimeout(() => {
+            // Check authentication immediately
+            function initializeAuth() {
                 if (window.mealPlannerAPI) {
                     checkAuthenticationRequired();
                 } else {
-                    console.error('MealPlannerAPI not loaded');
-                    showAuthGate();
+                    // If API not loaded yet, try again shortly
+                    setTimeout(initializeAuth, 100);
                 }
-            }, 1000);
+            }
+            
+            initializeAuth();
         });
     </script>
 </body>
