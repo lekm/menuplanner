@@ -3721,6 +3721,16 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                 // Set completion flag to prevent restart
                 onboardingCompleted = true;
                 
+                // Wait a moment for database consistency then verify save
+                setTimeout(async () => {
+                    try {
+                        const savedProfile = await window.mealPlannerAPI.getUserProfile();
+                        console.log('🔍 Verification - saved profile:', savedProfile);
+                    } catch (e) {
+                        console.log('⚠️ Could not verify profile save:', e);
+                    }
+                }, 500);
+                
                 // Hide onboarding modal
                 document.getElementById('onboarding-modal').classList.add('hidden');
                 
