@@ -2775,27 +2775,69 @@
         async function startAIOnboarding(user) {
             onboardingConversation = [];
             onboardingStep = 0;
-            userOnboardingData = { name: user.user_metadata?.display_name || user.email.split('@')[0] };
+            userOnboardingData = {};
             
             // Clear chat
             document.getElementById('onboarding-chat').innerHTML = '';
-            updateOnboardingProgress(1, 6);
+            updateOnboardingProgress(1, 7);
             
-            const welcomeMessage = `Hello ${userOnboardingData.name}! 👋 
+            const welcomeMessage = `👋 **Welcome to your personal meal planner!**
 
-Welcome to your personal meal planner! I'm here to help create a profile that understands your unique lifestyle and cooking needs. Whether you're coming home late from work, need quick energy-boosting meals, or want to prep ahead for busy periods, I'll tailor everything to work for you.
+I'm here to help create a profile that perfectly matches your lifestyle and cooking needs. This quick setup will make your meal planning much more effective and personalized.
 
-This setup takes about 3-4 minutes and will make your meal planning much more effective.
+This takes about 3-4 minutes and covers everything from your cooking experience to your schedule preferences.
 
-**First, let's talk about your cooking experience:**`;
+**Let's start with the basics - tell me a bit about yourself:**`;
             
             addOnboardingMessage('ai', welcomeMessage);
-            showOnboardingOptions([
-                { text: "🌱 Beginner - Just starting my cooking journey", value: "beginner" },
-                { text: "⚡ Intermediate - Comfortable with basics, want to grow", value: "intermediate" },
-                { text: "🍳 Advanced - I love cooking and trying new techniques", value: "advanced" },
-                { text: "👨‍🍳 Expert - Cooking is my passion/profession", value: "expert" }
-            ]);
+            
+            // Show custom input form for basic info
+            const chatContainer = document.getElementById('onboarding-chat');
+            const formDiv = document.createElement('div');
+            formDiv.className = 'mb-6 text-left max-w-2xl';
+            formDiv.id = 'basic-info-form';
+            
+            formDiv.innerHTML = `
+                <div class="bg-white border-2 border-gray-200 rounded-xl p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">What should I call you?</label>
+                        <input type="text" id="user-display-name" placeholder="Enter your name or nickname" 
+                               value="${user.user_metadata?.display_name || user.email.split('@')[0] || ''}"
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">What's your age range? (helps with portion sizes and meal types)</label>
+                        <select id="user-age-range" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select age range...</option>
+                            <option value="18-25">18-25</option>
+                            <option value="26-35">26-35</option>
+                            <option value="36-45">36-45</option>
+                            <option value="46-55">46-55</option>
+                            <option value="56-65">56-65</option>
+                            <option value="65+">65+</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Household size (how many people are you typically cooking for?)</label>
+                        <select id="household-size" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select...</option>
+                            <option value="1">Just me</option>
+                            <option value="2">2 people</option>
+                            <option value="3-4">3-4 people</option>
+                            <option value="5+">5+ people</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="submitBasicInfo()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 mt-4">
+                        Continue →
+                    </button>
+                </div>
+            `;
+            
+            chatContainer.appendChild(formDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
         function addOnboardingMessage(sender, message) {
@@ -2823,6 +2865,47 @@ This setup takes about 3-4 minutes and will make your meal planning much more ef
             if (progressElement) {
                 progressElement.textContent = `Step ${current} of ${total}`;
             }
+        }
+
+        function submitBasicInfo() {
+            const name = document.getElementById('user-display-name').value.trim();
+            const ageRange = document.getElementById('user-age-range').value;
+            const householdSize = document.getElementById('household-size').value;
+            
+            if (!name || !ageRange || !householdSize) {
+                alert('Please fill in all fields to continue.');
+                return;
+            }
+            
+            // Store basic info
+            userOnboardingData.displayName = name;
+            userOnboardingData.ageRange = ageRange;
+            userOnboardingData.householdSize = householdSize;
+            
+            // Remove the form
+            const form = document.getElementById('basic-info-form');
+            if (form) {
+                form.remove();
+            }
+            
+            // Add user's response summary
+            addOnboardingMessage('user', `Hi! I'm ${name}. I'm ${ageRange} years old and typically cook for ${householdSize === '1' ? 'just myself' : householdSize + ' people'}.`);
+            
+            // Continue to cooking experience
+            onboardingStep = 1;
+            updateOnboardingProgress(2, 7);
+            
+            const cookingMessage = `Nice to meet you, ${name}! 😊
+
+Now that I know a bit about you, let's talk about your **cooking experience level**. This helps me suggest recipes that match your skills and comfort in the kitchen:`;
+            
+            addOnboardingMessage('ai', cookingMessage);
+            showOnboardingOptions([
+                { text: "🌱 Beginner - Just starting my cooking journey", value: "beginner" },
+                { text: "⚡ Intermediate - Comfortable with basics, want to grow", value: "intermediate" },
+                { text: "🍳 Advanced - I love cooking and trying new techniques", value: "advanced" },
+                { text: "👨‍🍳 Expert - Cooking is my passion/profession", value: "expert" }
+            ]);
         }
 
         function resetOnboarding() {
@@ -2884,10 +2967,10 @@ This setup takes about 3-4 minutes and will make your meal planning much more ef
 
         async function processOnboardingStep(value) {
             onboardingStep++;
-            updateOnboardingProgress(onboardingStep + 1, 6);
+            updateOnboardingProgress(onboardingStep + 1, 7);
             
             switch(onboardingStep) {
-                case 1: // Cooking experience chosen
+                case 2: // Cooking experience chosen
                     userOnboardingData.experience = value;
                     const dietaryMessage = `Great! ${value === 'expert' ? 'With your expertise, you\'ll love the advanced features!' : value === 'advanced' ? 'Perfect! You\'ll appreciate the variety of recipes available.' : value === 'intermediate' ? 'Excellent! You\'re ready to explore new techniques.' : 'That\'s wonderful - everyone starts somewhere!'}
 
@@ -2904,7 +2987,7 @@ This setup takes about 3-4 minutes and will make your meal planning much more ef
                     ]);
                     break;
                     
-                case 2: // Dietary preferences chosen
+                case 3: // Dietary preferences chosen
                     userOnboardingData.dietary = value;
                     const equipmentMessage = `Perfect! ${value === 'none' ? 'Having flexibility with ingredients makes meal planning easier.' : value === 'multiple' ? 'No worries - we can accommodate multiple dietary needs.' : 'I\'ll make sure to suggest recipes that fit your dietary preferences.'} 
 
@@ -2919,7 +3002,7 @@ This setup takes about 3-4 minutes and will make your meal planning much more ef
                     ]);
                     break;
                     
-                case 3: // Equipment chosen
+                case 4: // Equipment chosen
                     userOnboardingData.equipment = value;
                     const scheduleMessage = `Excellent! ${value === 'advanced' ? 'With all that equipment, you can handle any recipe I suggest!' : value === 'minimal' ? 'No problem - some of the best meals come from simple setups!' : 'That\'s a great foundation for cooking.'}
 
@@ -2934,7 +3017,7 @@ This setup takes about 3-4 minutes and will make your meal planning much more ef
                     ]);
                     break;
                     
-                case 4: // Schedule chosen
+                case 5: // Schedule chosen
                     userOnboardingData.schedule = value;
                     const energyMessage = `Got it! ${value === 'night-shift' ? 'Night shift work definitely affects when and how you want to cook.' : value === 'irregular' ? 'Having a flexible schedule means you need adaptable meal options.' : 'Understanding your rhythm helps me suggest meals at the right times.'}
 
@@ -2949,7 +3032,7 @@ This setup takes about 3-4 minutes and will make your meal planning much more ef
                     ]);
                     break;
                     
-                case 5: // Energy preference chosen
+                case 6: // Energy preference chosen
                     userOnboardingData.energyPreference = value;
                     const mealPrepMessage = `Perfect! ${value === 'mixed' ? 'Having different energy levels is totally normal - I\'ll give you options for both.' : value === 'low' ? 'Nothing wrong with prioritizing efficiency - some of the best meals are simple ones!' : 'I love your enthusiasm for cooking!'}
 
@@ -2964,13 +3047,14 @@ This setup takes about 3-4 minutes and will make your meal planning much more ef
                     ]);
                     break;
                     
-                case 6: // Meal prep style chosen
+                case 7: // Meal prep style chosen
                     userOnboardingData.mealPrepStyle = value;
-                    updateOnboardingProgress(6, 6);
+                    updateOnboardingProgress(7, 7);
                     
                     const finalMessage = `🎉 **Fantastic! Your profile is complete!**
 
 Based on your responses, I now understand:
+• You're **${userOnboardingData.displayName}** (${userOnboardingData.ageRange}) cooking for **${userOnboardingData.householdSize === '1' ? 'yourself' : userOnboardingData.householdSize + ' people'}**
 • Your **${userOnboardingData.experience}** cooking level
 • Your **${userOnboardingData.dietary === 'none' ? 'flexible' : userOnboardingData.dietary}** dietary preferences  
 • Your **${userOnboardingData.equipment}** kitchen setup
@@ -3053,6 +3137,9 @@ I'll use this to suggest recipes that perfectly match your lifestyle, energy lev
             try {
                 // Save comprehensive onboarding data to user profile
                 const profileData = {
+                    display_name: userOnboardingData.displayName,
+                    age_range: userOnboardingData.ageRange,
+                    household_size: userOnboardingData.householdSize,
                     cooking_experience: userOnboardingData.experience,
                     dietary_restrictions: userOnboardingData.dietary === 'none' ? [] : [userOnboardingData.dietary],
                     equipment_level: userOnboardingData.equipment,
@@ -3061,7 +3148,7 @@ I'll use this to suggest recipes that perfectly match your lifestyle, energy lev
                     meal_prep_style: userOnboardingData.mealPrepStyle,
                     onboarding_completed: true,
                     onboarding_date: new Date().toISOString(),
-                    profile_version: '2.0' // Track profile schema version
+                    profile_version: '3.0' // Track profile schema version
                 };
 
                 await window.mealPlannerAPI.updateUserProfile(profileData);
