@@ -2800,10 +2800,10 @@ I'm your AI cooking assistant, and I'm here to learn about your unique life situ
 
 Instead of boring multiple choice questions, let's have a real conversation. I'll ask you about your lifestyle, cooking experience, kitchen setup, dietary needs, and any challenges you face - just like if we were chatting over coffee.
 
-**Let's start with the big picture: Tell me a bit about your age and life stage. Are you a student, working professional, parent, retiree, or something else? What's your current living situation like?**`;
+**First, let's make sure I'm calling you the right name, then tell me about your life stage and living situation.**`;
             
             addOnboardingMessage('ai', welcomeMessage);
-            showTextInput("Type your answer here... (e.g., 'I'm 28, working full-time and living in a small apartment' or 'I'm a college student in shared housing')");
+            showDisplayNameAndLifeStage();
         }
 
         function addOnboardingMessage(sender, message) {
@@ -2908,6 +2908,174 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     });
                 }
             }, 100);
+        }
+
+        function showDisplayNameAndLifeStage() {
+            const chatContainer = document.getElementById('onboarding-chat');
+            
+            // Remove any existing input
+            const existingInput = document.getElementById('onboarding-input');
+            if (existingInput) {
+                existingInput.remove();
+            }
+            
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'mb-6 text-left max-w-3xl';
+            inputDiv.id = 'onboarding-input';
+            
+            inputDiv.innerHTML = `
+                <div class="bg-white border-2 border-blue-200 rounded-xl p-4 shadow-sm">
+                    <!-- Display Name Section -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">What would you like me to call you?</label>
+                        <input 
+                            type="text" 
+                            id="display-name-input" 
+                            value="${userOnboardingData.name || ''}"
+                            placeholder="Your preferred name"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    
+                    <!-- Life Stage Section -->
+                    <div class="mb-4">
+                        <div class="text-sm text-gray-600 mb-3">What's your current life stage? (Select all that apply)</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+                            <button onclick="toggleQuickSelect(this, 'College/University student', true)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                College/University student
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Working professional', true)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Working professional
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Parent/caregiver', true)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Parent/caregiver
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Retired', true)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Retired
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Between jobs/career change', true)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Between jobs/career change
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Stay-at-home parent', true)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Stay-at-home parent
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Living Situation Section -->
+                    <div class="mb-4">
+                        <div class="text-sm text-gray-600 mb-3">What's your living situation like?</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+                            <button onclick="toggleQuickSelect(this, 'Live alone', false)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Live alone
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Live with partner/spouse', false)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Live with partner/spouse
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Live with family', false)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Live with family
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Shared housing/roommates', false)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Shared housing/roommates
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'Small apartment/studio', false)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                Small apartment/studio
+                            </button>
+                            <button onclick="toggleQuickSelect(this, 'House with full kitchen', false)" 
+                                class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left">
+                                House with full kitchen
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <textarea 
+                        id="user-response-input" 
+                        placeholder="Add any other details about your age, life stage, or living situation..."
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        rows="2"
+                        style="min-height: 60px;"
+                    ></textarea>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-sm text-gray-500">Choose options above and/or add details below</span>
+                        <button onclick="submitDisplayNameAndLifeStage()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                            Continue →
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            chatContainer.appendChild(inputDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Focus the display name input
+            setTimeout(() => {
+                const nameInput = document.getElementById('display-name-input');
+                if (nameInput) {
+                    nameInput.focus();
+                }
+            }, 100);
+        }
+
+        function submitDisplayNameAndLifeStage() {
+            const displayName = document.getElementById('display-name-input').value.trim();
+            const selectedButtons = document.querySelectorAll('.quick-select-btn.selected');
+            const selectedValues = Array.from(selectedButtons).map(btn => btn.textContent.trim());
+            const textInput = document.getElementById('user-response-input').value.trim();
+            
+            if (!displayName) {
+                alert('Please enter your preferred name to continue.');
+                return;
+            }
+            
+            // Update user data with new name
+            userOnboardingData.name = displayName;
+            
+            let response = '';
+            if (selectedValues.length > 0) {
+                response = selectedValues.join(', ');
+            }
+            if (textInput) {
+                response += (response ? '. ' : '') + textInput;
+            }
+            
+            if (!response) {
+                response = 'Prefer not to specify life stage details';
+            }
+            
+            const fullResponse = `My name is ${displayName}. ${response}`;
+            
+            // Add user's response to chat
+            addOnboardingMessage('user', fullResponse);
+            
+            // Store the response
+            userOnboardingData.responses.push({
+                step: onboardingStep,
+                question: getCurrentQuestion(),
+                answer: fullResponse,
+                display_name: displayName,
+                selected_options: selectedValues,
+                additional_text: textInput
+            });
+            
+            // Remove input
+            const inputDiv = document.getElementById('onboarding-input');
+            if (inputDiv) {
+                inputDiv.remove();
+            }
+            
+            // Process the response with AI
+            processConversationalResponse(fullResponse);
         }
 
         function showQuickSelectWithText(options, placeholder = "Add any additional details...", allowMultiple = false) {
@@ -3675,10 +3843,10 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                 // Parse responses into structured data
                 const responses = userOnboardingData.responses;
                 const profileData = {
-                    display_name: userOnboardingData.name,
+                    display_name: responses[0]?.display_name || userOnboardingData.name,
                     onboarding_type: 'conversational',
                     age_range: responses[0]?.answer || '',
-                    living_situation: responses[0]?.answer || '', // Same as age_range for now
+                    living_situation: responses[0]?.answer || '', // Extracted from step 1 response
                     accessibility_needs: responses[1]?.answer || '',
                     cooking_background: responses[2]?.answer || '',
                     dietary_needs: responses[3]?.answer || '',
@@ -3752,10 +3920,10 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                     console.log('🔄 Falling back to localStorage...');
                     const responses = userOnboardingData.responses;
                     const profileData = {
-                        display_name: userOnboardingData.name,
+                        display_name: responses[0]?.display_name || userOnboardingData.name,
                         onboarding_type: 'conversational',
                         age_range: responses[0]?.answer || '',
-                        living_situation: responses[0]?.answer || '', // Same as age_range for now
+                        living_situation: responses[0]?.answer || '', // Extracted from step 1 response
                         accessibility_needs: responses[1]?.answer || '',
                         cooking_background: responses[2]?.answer || '',
                         dietary_needs: responses[3]?.answer || '',

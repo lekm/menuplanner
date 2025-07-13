@@ -76,7 +76,7 @@ CREATE TABLE public.user_profiles (
   -- Meta fields
   onboarding_completed BOOLEAN DEFAULT FALSE,
   onboarding_date TIMESTAMPTZ,
-  profile_version TEXT DEFAULT '4.0',
+  profile_version TEXT DEFAULT '5.0',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
