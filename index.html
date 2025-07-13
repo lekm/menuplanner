@@ -48,6 +48,11 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
+    <!-- Loading fallback in case JS fails -->
+    <div id="loading-fallback" class="fixed inset-0 bg-blue-500 flex items-center justify-center text-white text-xl">
+        Loading...
+    </div>
+    
     <div id="main-app" class="w-full px-2 py-4 hidden">
         <!-- Header with Auth -->
         <div class="flex justify-between items-center mb-4">
@@ -2631,14 +2636,19 @@
         let isUserAuthenticated = false;
         
         function checkAuthenticationRequired() {
+            console.log('🔐 Checking authentication...');
             const user = window.mealPlannerAPI ? window.mealPlannerAPI.getCurrentUser() : null;
             isUserAuthenticated = !!user;
             
+            console.log('👤 User:', user ? user.email : 'Not logged in');
+            
             if (!isUserAuthenticated) {
+                console.log('🚪 No user found, showing auth gate...');
                 // Show auth gate overlay
                 showAuthGate();
                 return false;
             } else {
+                console.log('✅ User authenticated, checking onboarding...');
                 // Check if user needs onboarding
                 checkOnboardingStatus(user);
                 return true;
@@ -2646,16 +2656,22 @@
         }
 
         function showAuthGate() {
+            console.log('🚪 Showing auth gate...');
+            
             // Hide main app
             const mainApp = document.getElementById('main-app');
             if (mainApp) {
                 mainApp.classList.add('hidden');
+                console.log('📱 Main app hidden');
             }
             
             // Show auth gate (it's visible by default now, but ensure it's shown)
             const authGate = document.getElementById('auth-gate');
             if (authGate) {
                 authGate.classList.remove('hidden');
+                console.log('🚪 Auth gate shown');
+            } else {
+                console.error('❌ Auth gate element not found!');
             }
         }
 
@@ -2972,11 +2988,22 @@ Let's start with the basics - what's your cooking experience level?`;
 
         // Initialize auth UI on page load
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Page loaded, initializing auth...');
+            
+            // Hide loading fallback
+            const loadingFallback = document.getElementById('loading-fallback');
+            if (loadingFallback) {
+                loadingFallback.style.display = 'none';
+            }
+            
             // Check authentication immediately
             function initializeAuth() {
+                console.log('🔍 Checking if API is ready...', !!window.mealPlannerAPI);
                 if (window.mealPlannerAPI) {
+                    console.log('✅ API ready, checking authentication...');
                     checkAuthenticationRequired();
                 } else {
+                    console.log('⏳ API not ready, retrying...');
                     // If API not loaded yet, try again shortly
                     setTimeout(initializeAuth, 100);
                 }
