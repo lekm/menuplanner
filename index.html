@@ -2716,12 +2716,17 @@
                     return;
                 }
                 
+                console.log('🔍 Checking user profile for onboarding status...');
+                
                 const profile = await window.mealPlannerAPI.getUserProfile();
+                console.log('📊 User profile:', profile);
                 
                 // Check if user needs onboarding (no profile or incomplete profile)
                 if (!profile || !profile.onboarding_completed) {
+                    console.log('❌ Onboarding needed - profile missing or incomplete');
                     showOnboardingFlow(user);
                 } else {
+                    console.log('✅ Onboarding complete - showing app');
                     // User is fully set up, show normal app
                     hideAuthGate();
                     switchTab('planner');
@@ -3183,13 +3188,45 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     
                 case 6: // After schedule response
                     nextQuestion = await generateGoalsQuestion(userResponse);
-                    nextPlaceholder = "What are you hoping to achieve with meal planning? What challenges do you face?";
-                    break;
+                    // Show quick-select for goals and challenges
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'Eat healthier meals',
+                            'Save money on food',
+                            'Reduce food waste',
+                            'Save time during busy weekdays',
+                            'Learn new cooking skills',
+                            'Meal prep for the week',
+                            'Feed my family better',
+                            'Manage dietary restrictions easier',
+                            'Reduce decision fatigue (what to cook)',
+                            'Stop relying on takeout so much'
+                        ], "What other goals or challenges do you have with meal planning?", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
                     
                 case 7: // After goals response
                     nextQuestion = await generateSkillsQuestion(userResponse);
-                    nextPlaceholder = "How comfortable are you with knife work, different cooking techniques, following recipes?";
-                    break;
+                    // Show quick-select for skill levels
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'Very comfortable with knife work',
+                            'Basic knife skills (can chop safely)',
+                            'Still learning knife techniques',
+                            'Confident following detailed recipes',
+                            'Prefer simple, minimal-step recipes',
+                            'Good at improvising and adapting recipes',
+                            'Comfortable with most cooking methods',
+                            'Prefer one-pan or sheet-pan meals',
+                            'Love trying complex new techniques',
+                            'Stick to familiar, tried-and-true methods'
+                        ], "Tell me more about your cooking skills and comfort level...", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
                     
                 case 8: // After skills response
                     nextQuestion = await generateCuisineQuestion(userResponse);
@@ -3215,8 +3252,24 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     
                 case 9: // After cuisine response
                     nextQuestion = await generatePlanningQuestion(userResponse);
-                    nextPlaceholder = "How do you prefer to approach meal planning and prep?";
-                    break;
+                    // Show quick-select for planning styles
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'Batch cook on weekends',
+                            'Cook fresh each day',
+                            'Prep ingredients in advance, cook later',
+                            'Make large portions for leftovers',
+                            'Plan a week at a time',
+                            'Wing it day by day',
+                            'Theme nights (Taco Tuesday, etc.)',
+                            'Rotate between favorite meals',
+                            'Always trying new recipes',
+                            'Keep backup frozen/easy meals ready'
+                        ], "How else do you like to approach meal planning and prep?", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
                     
                 case 10: // After planning response
                     nextQuestion = await generateFinalQuestion(userResponse);
