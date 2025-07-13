@@ -1984,8 +1984,21 @@
                             await window.mealPlannerAPI.updateUserProfile({
                                 display_name: user.user_metadata?.display_name || user.email.split('@')[0],
                                 onboarding_completed: false,
-                                onboarding_type: null,
-                                full_conversation: null
+                                onboarding_type: 'reset',
+                                full_conversation: [],
+                                // Clear all onboarding fields
+                                age_range: '',
+                                living_situation: '',
+                                accessibility_needs: '',
+                                cooking_background: '',
+                                dietary_needs: '',
+                                kitchen_equipment: '',
+                                schedule_energy: '',
+                                goals_challenges: '',
+                                skills_comfort: '',
+                                flavor_preferences: '',
+                                planning_style: '',
+                                breakfast_preferences: ''
                             });
                         }
                     } else {
@@ -2014,7 +2027,36 @@
                     
                 } catch (error) {
                     console.error('Error resetting onboarding:', error);
-                    alert('❌ Error resetting onboarding. Please try again or contact support.');
+                    
+                    // Fallback: force reset with localStorage and show onboarding anyway
+                    try {
+                        console.log('Attempting fallback reset...');
+                        localStorage.removeItem('userProfile');
+                        onboardingCompleted = false;
+                        sessionStorage.removeItem('onboardingCompleted');
+                        
+                        // Clear schedule labels
+                        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                        days.forEach(day => {
+                            const element = document.getElementById(`${day}-schedule`);
+                            if (element) {
+                                element.textContent = '';
+                                element.className = 'text-xs text-gray-500';
+                            }
+                        });
+                        
+                        alert('✅ Onboarding reset (fallback mode)! You\'ll now go through the setup process again.');
+                        
+                        // Force onboarding
+                        const user = window.mealPlannerAPI.getCurrentUser();
+                        if (user) {
+                            showOnboardingFlow(user);
+                        }
+                        
+                    } catch (fallbackError) {
+                        console.error('Fallback reset also failed:', fallbackError);
+                        alert('❌ Reset failed. Try refreshing the page and using "Test Data" instead.');
+                    }
                 }
             }
         }
