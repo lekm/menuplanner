@@ -430,7 +430,7 @@
                 
                 <!-- Recipe Search -->
                 <div class="mb-4">
-                    <input type="text" id="recipe-search" placeholder="Search recipes..." onkeyup="filterRecipes()" 
+                    <input type="text" id="my-recipe-search" placeholder="Search recipes..." onkeyup="filterRecipes()" 
                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 
@@ -499,7 +499,7 @@
                 <!-- Search -->
                 <div class="mb-6 bg-white rounded-lg shadow-md p-4">
                     <div class="flex gap-2">
-                        <input type="text" id="recipe-search" placeholder="Search recipes..." class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="browse-recipe-search" placeholder="Search recipes..." class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
                         <button onclick="searchRecipes()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">🔍 Search</button>
                     </div>
                 </div>
@@ -1061,6 +1061,9 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
+                        <button onclick="useTestData()" class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 rounded text-white transition-colors">
+                            ⚡ Test Data
+                        </button>
                         <button onclick="resetOnboarding()" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded text-gray-700 transition-colors">
                             🔄 Reset
                         </button>
@@ -1302,7 +1305,7 @@
         }
 
         function filterRecipes() {
-            const search = document.getElementById('recipe-search').value.toLowerCase();
+            const search = document.getElementById('my-recipe-search').value.toLowerCase();
             const filteredRecipes = recipes.filter(recipe => 
                 recipe.name.toLowerCase().includes(search) ||
                 recipe.ingredients.some(ing => ing.toLowerCase().includes(search))
@@ -2446,7 +2449,7 @@
         }
 
         async function searchRecipes() {
-            const searchTerm = document.getElementById('recipe-search').value.trim();
+            const searchTerm = document.getElementById('browse-recipe-search').value.trim();
             if (!searchTerm) {
                 showBrowseStatus('Please enter a search term', 'error');
                 return;
@@ -2750,7 +2753,10 @@
         // Override tab switching to require auth
         const originalSwitchTab = switchTab;
         switchTab = function(tabName) {
-            if (!checkAuthenticationRequired()) {
+            // Skip auth check if user is already authenticated to prevent infinite loop
+            const user = window.mealPlannerAPI ? window.mealPlannerAPI.getCurrentUser() : null;
+            if (!user) {
+                checkAuthenticationRequired();
                 return;
             }
             originalSwitchTab(tabName);
@@ -2833,6 +2839,64 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             }
         }
 
+
+        async function useTestData() {
+            if (confirm('Use test data to quickly complete onboarding? This will skip the conversation and set up a sample profile.')) {
+                const user = window.mealPlannerAPI.getCurrentUser();
+                
+                // Sample test data profile
+                const testProfileData = {
+                    display_name: 'Test User',
+                    onboarding_type: 'conversational',
+                    age_range: 'Mid-30s, single professional',
+                    living_situation: 'Studio apartment, lives alone',
+                    accessibility_needs: 'ADHD - needs simple, quick meal options',
+                    cooking_background: 'Beginner level, comfortable with basics',
+                    dietary_needs: 'No major restrictions, trying to eat healthier',
+                    kitchen_equipment: 'Basic setup: stovetop, oven, microwave, blender',
+                    schedule_energy: 'Irregular work schedule, medium energy most days',
+                    goals_challenges: 'Want to meal prep on weekends, avoid takeout during busy weeks',
+                    skills_comfort: 'Comfortable with simple recipes, want to learn new techniques',
+                    flavor_preferences: 'Italian, Asian, comfort foods, not too spicy',
+                    planning_style: 'Batch cook on weekends, quick assembly during week',
+                    onboarding_completed: true,
+                    onboarding_date: new Date().toISOString(),
+                    profile_version: '5.0'
+                };
+                
+                try {
+                    await window.mealPlannerAPI.updateUserProfile(testProfileData);
+                    console.log('✅ Test profile saved successfully');
+                    
+                    // Set completion flag
+                    onboardingCompleted = true;
+                    
+                    // Hide onboarding modal and show success
+                    document.getElementById('onboarding-modal').classList.add('hidden');
+                    showOnboardingComplete();
+                    
+                    setTimeout(() => {
+                        hideAuthGate();
+                        switchTab('planner');
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('❌ Error saving test profile:', error);
+                    
+                    // Fallback to localStorage
+                    localStorage.setItem('userProfile', JSON.stringify(testProfileData));
+                    onboardingCompleted = true;
+                    
+                    document.getElementById('onboarding-modal').classList.add('hidden');
+                    showOnboardingComplete();
+                    
+                    setTimeout(() => {
+                        hideAuthGate();
+                        switchTab('planner');
+                    }, 2000);
+                }
+            }
+        }
 
         function resetOnboarding() {
             if (confirm('Are you sure you want to restart the onboarding process?')) {
@@ -3413,7 +3477,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                             'Soups and stews',
                             'Breakfast foods anytime',
                             'Simple American classics',
-                            'I\'m open to trying anything'
+                            "I'm open to trying anything"
                         ], "What other flavors, cuisines, or types of food do you enjoy?", true);
                     }, 1500 + Math.random() * 1000);
                     return;
