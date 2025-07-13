@@ -1,0 +1,24 @@
+# OAuth and API credentials
+client_secret_*.json
+*.oauth
+.env
+.env.local
+.env.production
+.env.development
+
+# Vercel
+.vercel
+
+# Node modules (if any)
+node_modules/
+
+# MacOS
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
