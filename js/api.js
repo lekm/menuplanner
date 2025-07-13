@@ -14,11 +14,10 @@ class MealPlannerAPI {
         const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || window.VITE_SUPABASE_URL;
         const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || window.VITE_SUPABASE_ANON_KEY;
         
-        if (supabaseUrl && supabaseKey) {
+        if (supabaseUrl && supabaseKey && window.supabase) {
             try {
-                // Import Supabase dynamically
-                const { createClient } = await import('https://cdn.skypack.dev/@supabase/supabase-js@2');
-                this.supabase = createClient(supabaseUrl, supabaseKey);
+                // Use globally loaded Supabase
+                this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
                 this.isSupabaseEnabled = true;
                 
                 // Listen for auth changes

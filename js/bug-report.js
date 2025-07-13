@@ -11,19 +11,35 @@ class BugReportSystem {
         
         if (userId) {
             try {
-                // Import EmailJS dynamically
-                const emailjs = await import('https://cdn.skypack.dev/@emailjs/browser@3');
-                window.emailjs = emailjs.default;
+                // Load EmailJS from CDN if not already loaded
+                if (!window.emailjs) {
+                    await this.loadEmailJS();
+                }
                 
-                emailjs.default.init(userId);
-                this.emailJSInitialized = true;
-                console.log('EmailJS initialized successfully');
+                if (window.emailjs) {
+                    window.emailjs.init(userId);
+                    this.emailJSInitialized = true;
+                    console.log('EmailJS initialized successfully');
+                }
             } catch (error) {
                 console.error('EmailJS initialization failed:', error);
             }
         } else {
             console.log('EmailJS not configured');
         }
+    }
+
+    async loadEmailJS() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+            script.onload = () => {
+                window.emailjs = window.emailjs || window.EmailJS;
+                resolve();
+            };
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
     }
 
     async sendBugReport(reportData) {
