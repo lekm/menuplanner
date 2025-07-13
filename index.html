@@ -1468,6 +1468,26 @@
             }
         }
 
+        // Bug report functions (ensure they're available globally)
+        function showBugReportModal() {
+            if (window.bugReportSystem) {
+                window.bugReportSystem.showBugReportModal();
+            } else {
+                console.error('Bug report system not loaded');
+                alert('Bug reporting system is loading. Please try again in a moment.');
+            }
+        }
+
+        function closeBugReportModal() {
+            if (window.bugReportSystem) {
+                window.bugReportSystem.closeBugReportModal();
+            }
+        }
+
+        // Make functions globally available
+        window.showBugReportModal = showBugReportModal;
+        window.closeBugReportModal = closeBugReportModal;
+
         // Initialize auth UI on page load
         document.addEventListener('DOMContentLoaded', () => {
             // Wait for API to initialize
