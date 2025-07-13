@@ -1042,28 +1042,42 @@
     </div>
 
     <!-- AI Onboarding Modal -->
-    <div id="onboarding-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg w-full max-w-lg max-h-[90vh] flex flex-col">
-            <div class="p-6 border-b">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl">
-                        🤖
+    <div id="onboarding-modal" class="hidden fixed inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl w-full max-w-4xl h-[90vh] flex flex-col shadow-2xl">
+            <div class="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl">
+                            🤖
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">AI Setup Assistant</h3>
+                            <p class="text-gray-600">Let's create your personalized meal planning profile</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-lg font-semibold">AI Setup Assistant</h3>
-                        <p class="text-sm text-gray-600">Let's personalize your experience</p>
+                    <div class="flex gap-2">
+                        <button onclick="resetOnboarding()" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded text-gray-700 transition-colors">
+                            🔄 Reset
+                        </button>
+                        <button onclick="logoutAndExit()" class="px-3 py-1 text-sm bg-red-200 hover:bg-red-300 rounded text-red-700 transition-colors">
+                            🚪 Logout
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <div id="onboarding-chat" class="flex-1 p-6 overflow-y-auto max-h-96">
+            <div id="onboarding-chat" class="flex-1 p-8 overflow-y-auto">
                 <!-- Chat messages will be added here -->
             </div>
             
-            <div class="p-4 border-t bg-gray-50 text-center">
-                <p class="text-xs text-gray-500">
-                    🔒 Your responses help us personalize your meal planning experience
-                </p>
+            <div class="p-6 border-t bg-gray-50">
+                <div class="flex justify-center">
+                    <p class="text-sm text-gray-500 flex items-center gap-2">
+                        🔒 Your responses help us personalize your meal planning experience
+                        <span class="text-gray-300">•</span>
+                        <span id="onboarding-progress" class="text-blue-600 font-medium">Step 1 of 6</span>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -2758,46 +2772,89 @@
             onboardingStep = 0;
             userOnboardingData = { name: user.user_metadata?.display_name || user.email.split('@')[0] };
             
-            const welcomeMessage = `Hello ${userOnboardingData.name}! 👋 Welcome to your personal meal planner! I'm here to help you set up your profile so I can give you the best recipe suggestions. This will only take 2-3 minutes.
+            // Clear chat
+            document.getElementById('onboarding-chat').innerHTML = '';
+            updateOnboardingProgress(1, 6);
+            
+            const welcomeMessage = `Hello ${userOnboardingData.name}! 👋 
 
-Let's start with the basics - what's your cooking experience level?`;
+Welcome to your personal meal planner! I'm here to help create a profile that understands your unique lifestyle and cooking needs. Whether you're coming home late from work, need quick energy-boosting meals, or want to prep ahead for busy periods, I'll tailor everything to work for you.
+
+This setup takes about 3-4 minutes and will make your meal planning much more effective.
+
+**First, let's talk about your cooking experience:**`;
             
             addOnboardingMessage('ai', welcomeMessage);
             showOnboardingOptions([
-                { text: "Beginner - I'm just starting out", value: "beginner" },
-                { text: "Intermediate - I know the basics", value: "intermediate" },
-                { text: "Advanced - I love cooking", value: "advanced" }
+                { text: "🌱 Beginner - Just starting my cooking journey", value: "beginner" },
+                { text: "⚡ Intermediate - Comfortable with basics, want to grow", value: "intermediate" },
+                { text: "🍳 Advanced - I love cooking and trying new techniques", value: "advanced" },
+                { text: "👨‍🍳 Expert - Cooking is my passion/profession", value: "expert" }
             ]);
         }
 
         function addOnboardingMessage(sender, message) {
             const chatContainer = document.getElementById('onboarding-chat');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `mb-4 ${sender === 'ai' ? 'text-left' : 'text-right'}`;
+            messageDiv.className = `mb-6 ${sender === 'ai' ? 'text-left' : 'text-right'}`;
             
             const messageBubble = document.createElement('div');
-            messageBubble.className = `inline-block p-3 rounded-lg max-w-xs ${
+            messageBubble.className = `inline-block p-4 rounded-xl max-w-2xl text-base leading-relaxed ${
                 sender === 'ai' 
-                ? 'bg-blue-100 text-blue-900' 
-                : 'bg-green-100 text-green-900'
+                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 border border-blue-200' 
+                : 'bg-gradient-to-r from-green-50 to-emerald-50 text-gray-800 border border-green-200'
             }`;
-            messageBubble.textContent = message;
+            
+            // Support markdown-style bold text
+            messageBubble.innerHTML = message.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>');
             
             messageDiv.appendChild(messageBubble);
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
+        function updateOnboardingProgress(current, total) {
+            const progressElement = document.getElementById('onboarding-progress');
+            if (progressElement) {
+                progressElement.textContent = `Step ${current} of ${total}`;
+            }
+        }
+
+        function resetOnboarding() {
+            if (confirm('Are you sure you want to restart the onboarding process?')) {
+                onboardingConversation = [];
+                onboardingStep = 0;
+                userOnboardingData = {};
+                const user = window.mealPlannerAPI.getCurrentUser();
+                if (user) {
+                    startAIOnboarding(user);
+                }
+            }
+        }
+
+        async function logoutAndExit() {
+            if (confirm('Are you sure you want to logout and exit?')) {
+                try {
+                    await window.mealPlannerAPI.signOut();
+                    document.getElementById('onboarding-modal').classList.add('hidden');
+                    showAuthGate();
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Error logging out. Please try again.');
+                }
+            }
+        }
+
         function showOnboardingOptions(options) {
             const chatContainer = document.getElementById('onboarding-chat');
             const optionsDiv = document.createElement('div');
-            optionsDiv.className = 'mb-4 text-left';
+            optionsDiv.className = 'mb-6 text-left max-w-2xl';
             optionsDiv.id = 'current-options';
             
-            options.forEach(option => {
+            options.forEach((option, index) => {
                 const button = document.createElement('button');
-                button.className = 'block w-full text-left p-2 mb-2 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors';
-                button.textContent = option.text;
+                button.className = 'block w-full text-left p-4 mb-3 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-base font-medium shadow-sm hover:shadow-md';
+                button.innerHTML = option.text;
                 button.onclick = () => handleOnboardingChoice(option.value, option.text);
                 optionsDiv.appendChild(button);
             });
@@ -2822,58 +2879,115 @@ Let's start with the basics - what's your cooking experience level?`;
 
         async function processOnboardingStep(value) {
             onboardingStep++;
+            updateOnboardingProgress(onboardingStep + 1, 6);
             
             switch(onboardingStep) {
                 case 1: // Cooking experience chosen
                     userOnboardingData.experience = value;
-                    const experienceResponse = await getAIResponse(`The user said their cooking experience is ${value}. Ask them about their dietary preferences or restrictions (vegetarian, vegan, gluten-free, etc.). Be encouraging and keep it conversational.`);
-                    addOnboardingMessage('ai', experienceResponse);
+                    const dietaryMessage = `Great! ${value === 'expert' ? 'With your expertise, you\'ll love the advanced features!' : value === 'advanced' ? 'Perfect! You\'ll appreciate the variety of recipes available.' : value === 'intermediate' ? 'Excellent! You\'re ready to explore new techniques.' : 'That\'s wonderful - everyone starts somewhere!'}
+
+**Next, let's talk about your dietary preferences.** This helps me suggest meals that work for your lifestyle and any health goals:`;
+                    
+                    addOnboardingMessage('ai', dietaryMessage);
                     showOnboardingOptions([
-                        { text: "No restrictions - I eat everything!", value: "none" },
-                        { text: "Vegetarian", value: "vegetarian" },
-                        { text: "Vegan", value: "vegan" },
-                        { text: "Gluten-free", value: "gluten-free" },
-                        { text: "Other/Multiple restrictions", value: "other" }
+                        { text: "🍖 No restrictions - I enjoy all types of food", value: "none" },
+                        { text: "🥬 Vegetarian - No meat, but dairy and eggs are fine", value: "vegetarian" },
+                        { text: "🌱 Vegan - Plant-based only", value: "vegan" },
+                        { text: "🌾 Gluten-free - Need to avoid gluten", value: "gluten-free" },
+                        { text: "🥗 Low-carb/Keto focused", value: "low-carb" },
+                        { text: "⚖️ Multiple restrictions (I'll specify later)", value: "multiple" }
                     ]);
                     break;
                     
                 case 2: // Dietary preferences chosen
                     userOnboardingData.dietary = value;
-                    const dietaryResponse = await getAIResponse(`The user's dietary preference is ${value}. Now ask about their cooking equipment. Keep it brief and friendly.`);
-                    addOnboardingMessage('ai', dietaryResponse);
+                    const equipmentMessage = `Perfect! ${value === 'none' ? 'Having flexibility with ingredients makes meal planning easier.' : value === 'multiple' ? 'No worries - we can accommodate multiple dietary needs.' : 'I\'ll make sure to suggest recipes that fit your dietary preferences.'} 
+
+**Now, what does your kitchen setup look like?** This helps me recommend recipes that match your available tools:`;
+                    
+                    addOnboardingMessage('ai', equipmentMessage);
                     showOnboardingOptions([
-                        { text: "Basic kitchen (stove, oven, pans)", value: "basic" },
-                        { text: "Well-equipped (+ slow cooker, stand mixer)", value: "intermediate" },
-                        { text: "Fully loaded (+ Instant Pot, air fryer, etc.)", value: "advanced" }
+                        { text: "🔥 Basic setup - Stove, oven, essential pans", value: "basic" },
+                        { text: "⚡ Well-equipped - Plus slow cooker, blender, stand mixer", value: "intermediate" },
+                        { text: "🏠 Fully loaded - Instant Pot, air fryer, food processor, the works!", value: "advanced" },
+                        { text: "🎒 Minimal - Limited space/equipment (dorm, small apartment)", value: "minimal" }
                     ]);
                     break;
                     
                 case 3: // Equipment chosen
                     userOnboardingData.equipment = value;
-                    const equipmentResponse = await getAIResponse(`The user has ${value} kitchen equipment. Ask about their typical energy levels for cooking (referencing the app's energy-based system: high energy for complex cooking, medium for standard meals, survival mode for quick/easy options).`);
-                    addOnboardingMessage('ai', equipmentResponse);
+                    const scheduleMessage = `Excellent! ${value === 'advanced' ? 'With all that equipment, you can handle any recipe I suggest!' : value === 'minimal' ? 'No problem - some of the best meals come from simple setups!' : 'That\'s a great foundation for cooking.'}
+
+**Let's talk about your schedule and energy patterns.** Since everyone has different work schedules and energy levels throughout the week, this helps me suggest the right meals for the right times:`;
+                    
+                    addOnboardingMessage('ai', scheduleMessage);
                     showOnboardingOptions([
-                        { text: "I love spending time cooking elaborate meals", value: "high" },
-                        { text: "I enjoy cooking but keep it reasonable", value: "medium" },
-                        { text: "I need quick and easy options most days", value: "low" }
+                        { text: "🌅 Regular 9-5 - Consistent daily schedule", value: "regular" },
+                        { text: "🌙 Night shifts - Work evenings/late nights", value: "night-shift" },
+                        { text: "🔄 Rotating schedule - Different shifts each week", value: "rotating" },
+                        { text: "📅 Irregular/freelance - Schedule varies daily", value: "irregular" }
                     ]);
                     break;
                     
-                case 4: // Energy level chosen
+                case 4: // Schedule chosen
+                    userOnboardingData.schedule = value;
+                    const energyMessage = `Got it! ${value === 'night-shift' ? 'Night shift work definitely affects when and how you want to cook.' : value === 'irregular' ? 'Having a flexible schedule means you need adaptable meal options.' : 'Understanding your rhythm helps me suggest meals at the right times.'}
+
+**Finally, let's talk about your typical cooking energy levels.** This app uses an energy-based system to match recipes to how you're feeling:`;
+                    
+                    addOnboardingMessage('ai', energyMessage);
+                    showOnboardingOptions([
+                        { text: "🚀 High Energy Days - Love cooking complex, multi-step meals", value: "high" },
+                        { text: "⚡ Medium Energy - Enjoy cooking but want reasonable prep time", value: "medium" },
+                        { text: "😴 Survival Mode - Need quick, minimal-effort options most days", value: "low" },
+                        { text: "🔄 It varies - Some days high energy, some days survival mode", value: "mixed" }
+                    ]);
+                    break;
+                    
+                case 5: // Energy preference chosen
                     userOnboardingData.energyPreference = value;
-                    const finalResponse = await getAIResponse(`The user prefers ${value} energy cooking. Give them an encouraging wrap-up message, mention their setup is complete, and tell them they can start planning meals. Be enthusiastic about their meal planning journey.`);
-                    addOnboardingMessage('ai', finalResponse);
+                    const mealPrepMessage = `Perfect! ${value === 'mixed' ? 'Having different energy levels is totally normal - I\'ll give you options for both.' : value === 'low' ? 'Nothing wrong with prioritizing efficiency - some of the best meals are simple ones!' : 'I love your enthusiasm for cooking!'}
+
+**One last question: How do you prefer to approach meal planning?**`;
+                    
+                    addOnboardingMessage('ai', mealPrepMessage);
+                    showOnboardingOptions([
+                        { text: "📦 Meal prep Sunday - Cook everything in advance", value: "batch-prep" },
+                        { text: "🥘 Daily fresh cooking - Cook each meal when I want it", value: "fresh-daily" },
+                        { text: "🔄 Mix of both - Some prep, some fresh cooking", value: "hybrid" },
+                        { text: "🎯 Ingredient prep - Prep ingredients, assemble meals later", value: "ingredient-prep" }
+                    ]);
+                    break;
+                    
+                case 6: // Meal prep style chosen
+                    userOnboardingData.mealPrepStyle = value;
+                    updateOnboardingProgress(6, 6);
+                    
+                    const finalMessage = `🎉 **Fantastic! Your profile is complete!**
+
+Based on your responses, I now understand:
+• Your **${userOnboardingData.experience}** cooking level
+• Your **${userOnboardingData.dietary === 'none' ? 'flexible' : userOnboardingData.dietary}** dietary preferences  
+• Your **${userOnboardingData.equipment}** kitchen setup
+• Your **${userOnboardingData.schedule}** work schedule
+• Your **${userOnboardingData.energyPreference}** energy patterns
+• Your **${userOnboardingData.mealPrepStyle}** meal planning style
+
+I'll use this to suggest recipes that perfectly match your lifestyle, energy levels, and available time. Ready to start planning some amazing meals?`;
+                    
+                    addOnboardingMessage('ai', finalMessage);
                     
                     // Show completion button
                     const chatContainer = document.getElementById('onboarding-chat');
                     const completeDiv = document.createElement('div');
-                    completeDiv.className = 'mb-4 text-center';
+                    completeDiv.className = 'mb-6 text-center';
                     const completeButton = document.createElement('button');
-                    completeButton.className = 'bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors';
-                    completeButton.textContent = '🎉 Start Planning Meals!';
+                    completeButton.className = 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg';
+                    completeButton.textContent = '🎉 Start Planning My Meals!';
                     completeButton.onclick = completeOnboarding;
                     completeDiv.appendChild(completeButton);
                     chatContainer.appendChild(completeDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
                     break;
             }
         }
@@ -2932,14 +3046,17 @@ Let's start with the basics - what's your cooking experience level?`;
 
         async function completeOnboarding() {
             try {
-                // Save onboarding data to user profile
+                // Save comprehensive onboarding data to user profile
                 const profileData = {
                     cooking_experience: userOnboardingData.experience,
                     dietary_restrictions: userOnboardingData.dietary === 'none' ? [] : [userOnboardingData.dietary],
                     equipment_level: userOnboardingData.equipment,
+                    work_schedule: userOnboardingData.schedule,
                     energy_preference: userOnboardingData.energyPreference,
+                    meal_prep_style: userOnboardingData.mealPrepStyle,
                     onboarding_completed: true,
-                    onboarding_date: new Date().toISOString()
+                    onboarding_date: new Date().toISOString(),
+                    profile_version: '2.0' // Track profile schema version
                 };
 
                 await window.mealPlannerAPI.updateUserProfile(profileData);
