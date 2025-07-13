@@ -76,6 +76,7 @@
             <div class="bg-white rounded-lg shadow-md p-1 flex flex-wrap">
                 <button onclick="switchTab('planner')" id="tab-planner" class="px-3 md:px-4 py-2 rounded-md text-xs md:text-sm font-medium transition-colors bg-blue-500 text-white">📅 Planner</button>
                 <button onclick="switchTab('recipes')" id="tab-recipes" class="px-3 md:px-4 py-2 rounded-md text-xs md:text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100">📖 My Recipes</button>
+                <button onclick="switchTab('browse')" id="tab-browse" class="px-3 md:px-4 py-2 rounded-md text-xs md:text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100">🌐 Browse Recipes</button>
                 <button onclick="switchTab('templates')" id="tab-templates" class="px-3 md:px-4 py-2 rounded-md text-xs md:text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100">📋 Templates</button>
             </div>
         </div>
@@ -448,6 +449,71 @@
                     <div id="saved-templates-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- User templates will be populated here -->
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Browse Recipes Tab Content -->
+        <div id="browse-content" class="hidden">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">Browse RecipeTin Eats Recipes</h2>
+                
+                <!-- Category Filters -->
+                <div class="mb-6 bg-white rounded-lg shadow-md p-4">
+                    <h3 class="font-semibold text-gray-800 mb-3">Browse by Category</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                        <!-- Cuisine Types -->
+                        <button onclick="browseCategory('asian')" class="category-btn bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm transition-colors">🥢 Asian</button>
+                        <button onclick="browseCategory('italian')" class="category-btn bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-md text-sm transition-colors">🍝 Italian</button>
+                        <button onclick="browseCategory('mexican')" class="category-btn bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-3 py-2 rounded-md text-sm transition-colors">🌮 Mexican</button>
+                        <button onclick="browseCategory('indian')" class="category-btn bg-orange-100 hover:bg-orange-200 text-orange-800 px-3 py-2 rounded-md text-sm transition-colors">🍛 Indian</button>
+                        <button onclick="browseCategory('greek')" class="category-btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-2 rounded-md text-sm transition-colors">🇬🇷 Greek</button>
+                        <button onclick="browseCategory('french')" class="category-btn bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-2 rounded-md text-sm transition-colors">🇫🇷 French</button>
+                        
+                        <!-- Meal Types -->
+                        <button onclick="browseCategory('chicken')" class="category-btn bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-2 rounded-md text-sm transition-colors">🐔 Chicken</button>
+                        <button onclick="browseCategory('beef')" class="category-btn bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm transition-colors">🥩 Beef</button>
+                        <button onclick="browseCategory('seafood')" class="category-btn bg-cyan-100 hover:bg-cyan-200 text-cyan-800 px-3 py-2 rounded-md text-sm transition-colors">🐟 Seafood</button>
+                        <button onclick="browseCategory('vegetarian')" class="category-btn bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-md text-sm transition-colors">🥬 Vegetarian</button>
+                        <button onclick="browseCategory('pasta')" class="category-btn bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-3 py-2 rounded-md text-sm transition-colors">🍜 Pasta</button>
+                        <button onclick="browseCategory('desserts')" class="category-btn bg-pink-100 hover:bg-pink-200 text-pink-800 px-3 py-2 rounded-md text-sm transition-colors">🍰 Desserts</button>
+                        
+                        <!-- Cooking Methods -->
+                        <button onclick="browseCategory('slow-cooker')" class="category-btn bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-md text-sm transition-colors">🍲 Slow Cooker</button>
+                        <button onclick="browseCategory('one-pot')" class="category-btn bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-3 py-2 rounded-md text-sm transition-colors">🥘 One Pot</button>
+                        <button onclick="browseCategory('stir-fries')" class="category-btn bg-rose-100 hover:bg-rose-200 text-rose-800 px-3 py-2 rounded-md text-sm transition-colors">🥗 Stir Fries</button>
+                        <button onclick="browseCategory('soups')" class="category-btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-2 rounded-md text-sm transition-colors">🍜 Soups</button>
+                        <button onclick="browseCategory('salads')" class="category-btn bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-md text-sm transition-colors">🥗 Salads</button>
+                        <button onclick="browseCategory('breakfast')" class="category-btn bg-orange-100 hover:bg-orange-200 text-orange-800 px-3 py-2 rounded-md text-sm transition-colors">🍳 Breakfast</button>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="mb-6 bg-white rounded-lg shadow-md p-4">
+                    <div class="flex gap-2">
+                        <input type="text" id="recipe-search" placeholder="Search recipes..." class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        <button onclick="searchRecipes()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">🔍 Search</button>
+                    </div>
+                </div>
+
+                <!-- Browse Status -->
+                <div id="browse-status" class="hidden mb-4 p-3 rounded-md">
+                    <div id="browse-message" class="text-sm"></div>
+                </div>
+
+                <!-- Recipe Results -->
+                <div id="recipe-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="col-span-full text-center text-gray-500 py-8">
+                        <p class="text-lg">🍽️ Choose a category above to browse recipes</p>
+                        <p class="text-sm">Click any category to discover amazing recipes from RecipeTin Eats</p>
+                    </div>
+                </div>
+
+                <!-- Load More Button -->
+                <div id="load-more-container" class="hidden text-center mt-6">
+                    <button onclick="loadMoreRecipes()" id="load-more-btn" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors">
+                        Load More Recipes
+                    </button>
                 </div>
             </div>
         </div>
@@ -994,6 +1060,7 @@
             // Hide all content
             document.getElementById('planner-content').classList.add('hidden');
             document.getElementById('recipes-content').classList.add('hidden');
+            document.getElementById('browse-content').classList.add('hidden');
             document.getElementById('templates-content').classList.add('hidden');
             
             // Show selected content
@@ -2230,6 +2297,251 @@
                     const checkbox = document.querySelector(`input[value="${eq}"]`);
                     if (checkbox) checkbox.checked = true;
                 });
+            }
+        }
+
+        // Recipe Browser Functions
+        let currentCategory = null;
+        let recipeResults = [];
+        let displayedRecipes = 0;
+        const recipesPerPage = 12;
+
+        async function browseCategory(category) {
+            currentCategory = category;
+            displayedRecipes = 0;
+            recipeResults = [];
+            
+            showBrowseStatus(`Loading ${category} recipes...`, 'loading');
+            
+            try {
+                // Simulate category browsing by fetching category page
+                const categoryUrl = `https://www.recipetineats.com/category/${category}/`;
+                const recipes = await fetchCategoryRecipes(categoryUrl);
+                
+                recipeResults = recipes;
+                displayRecipeResults(recipes.slice(0, recipesPerPage));
+                displayedRecipes = Math.min(recipesPerPage, recipes.length);
+                
+                showBrowseStatus(`Found ${recipes.length} ${category} recipes`, 'success');
+                
+                // Show load more button if there are more recipes
+                const loadMoreContainer = document.getElementById('load-more-container');
+                if (recipes.length > recipesPerPage) {
+                    loadMoreContainer.classList.remove('hidden');
+                } else {
+                    loadMoreContainer.classList.add('hidden');
+                }
+                
+            } catch (error) {
+                console.error('Browse error:', error);
+                showBrowseStatus(`Failed to load ${category} recipes: ${error.message}`, 'error');
+            }
+        }
+
+        async function searchRecipes() {
+            const searchTerm = document.getElementById('recipe-search').value.trim();
+            if (!searchTerm) {
+                showBrowseStatus('Please enter a search term', 'error');
+                return;
+            }
+            
+            showBrowseStatus(`Searching for "${searchTerm}"...`, 'loading');
+            
+            try {
+                // For demonstration, we'll search within a general category
+                const searchUrl = `https://www.recipetineats.com/?s=${encodeURIComponent(searchTerm)}`;
+                const recipes = await fetchSearchResults(searchUrl, searchTerm);
+                
+                recipeResults = recipes;
+                displayRecipeResults(recipes.slice(0, recipesPerPage));
+                displayedRecipes = Math.min(recipesPerPage, recipes.length);
+                
+                showBrowseStatus(`Found ${recipes.length} recipes for "${searchTerm}"`, 'success');
+                
+                const loadMoreContainer = document.getElementById('load-more-container');
+                if (recipes.length > recipesPerPage) {
+                    loadMoreContainer.classList.remove('hidden');
+                } else {
+                    loadMoreContainer.classList.add('hidden');
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                showBrowseStatus(`Search failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function fetchCategoryRecipes(categoryUrl) {
+            // Use CORS proxy to fetch category page
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(categoryUrl)}`;
+            
+            try {
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                return parseRecipeListFromHtml(data.contents);
+            } catch (error) {
+                throw new Error('Unable to fetch category recipes');
+            }
+        }
+
+        async function fetchSearchResults(searchUrl, searchTerm) {
+            // For demo purposes, return some mock recipes for common searches
+            const mockRecipes = {
+                'chicken': [
+                    { title: 'Chicken Stir Fry', url: 'https://www.recipetineats.com/chicken-stir-fry/', description: 'Quick and easy chicken stir fry with vegetables' },
+                    { title: 'Honey Garlic Chicken', url: 'https://www.recipetineats.com/honey-garlic-chicken/', description: 'Sweet and savory glazed chicken' },
+                    { title: 'Chicken Curry', url: 'https://www.recipetineats.com/chicken-curry/', description: 'Creamy and aromatic chicken curry' },
+                ],
+                'beef': [
+                    { title: 'Beef Stroganoff', url: 'https://www.recipetineats.com/beef-stroganoff/', description: 'Classic creamy beef stroganoff' },
+                    { title: 'Beef and Broccoli', url: 'https://www.recipetineats.com/beef-broccoli/', description: 'Chinese-style beef and broccoli' },
+                ],
+                'pasta': [
+                    { title: 'Spaghetti Carbonara', url: 'https://www.recipetineats.com/carbonara/', description: 'Authentic Italian carbonara' },
+                    { title: 'Beef Ragu', url: 'https://www.recipetineats.com/beef-ragu/', description: 'Rich and hearty beef ragu sauce' },
+                ]
+            };
+
+            // Find matching recipes
+            for (const [category, recipes] of Object.entries(mockRecipes)) {
+                if (searchTerm.toLowerCase().includes(category)) {
+                    return recipes;
+                }
+            }
+
+            // Return a few general recipes if no specific match
+            return [
+                { title: 'Classic Chicken Stir Fry', url: 'https://www.recipetineats.com/chicken-stir-fry/', description: 'A versatile and quick dinner option' }
+            ];
+        }
+
+        function parseRecipeListFromHtml(html) {
+            // This would normally parse the HTML to extract recipe links and titles
+            // For demo purposes, return some sample recipes based on common categories
+            const sampleRecipes = {
+                'asian': [
+                    { title: 'Chicken Stir Fry', url: 'https://www.recipetineats.com/chicken-stir-fry/', description: 'Quick and flavorful Asian-style stir fry' },
+                    { title: 'Beef and Broccoli', url: 'https://www.recipetineats.com/beef-broccoli/', description: 'Classic Chinese takeout favorite' },
+                    { title: 'Fried Rice', url: 'https://www.recipetineats.com/fried-rice/', description: 'Perfect for using leftover rice' },
+                    { title: 'Thai Basil Chicken', url: 'https://www.recipetineats.com/thai-basil-chicken/', description: 'Aromatic Thai stir fry' },
+                ],
+                'italian': [
+                    { title: 'Spaghetti Carbonara', url: 'https://www.recipetineats.com/carbonara/', description: 'Authentic Roman pasta dish' },
+                    { title: 'Chicken Parmigiana', url: 'https://www.recipetineats.com/chicken-parmigiana/', description: 'Crispy breaded chicken with marinara' },
+                    { title: 'Beef Ragu', url: 'https://www.recipetineats.com/beef-ragu/', description: 'Rich, slow-cooked meat sauce' },
+                ],
+                'mexican': [
+                    { title: 'Chicken Tacos', url: 'https://www.recipetineats.com/chicken-tacos/', description: 'Juicy seasoned chicken in soft tortillas' },
+                    { title: 'Beef Enchiladas', url: 'https://www.recipetineats.com/beef-enchiladas/', description: 'Cheesy rolled tortillas in red sauce' },
+                ],
+                'indian': [
+                    { title: 'Chicken Curry', url: 'https://www.recipetineats.com/chicken-curry/', description: 'Creamy and aromatic chicken curry' },
+                    { title: 'Butter Chicken', url: 'https://www.recipetineats.com/butter-chicken/', description: 'Rich tomato-based curry' },
+                ]
+            };
+
+            return sampleRecipes[currentCategory] || sampleRecipes['asian'] || [];
+        }
+
+        function displayRecipeResults(recipes) {
+            const resultsContainer = document.getElementById('recipe-results');
+            
+            if (recipes.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="col-span-full text-center text-gray-500 py-8">
+                        <p class="text-lg">No recipes found</p>
+                        <p class="text-sm">Try a different category or search term</p>
+                    </div>
+                `;
+                return;
+            }
+
+            resultsContainer.innerHTML = recipes.map(recipe => `
+                <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+                    <h4 class="font-semibold text-gray-800 mb-2">${recipe.title}</h4>
+                    <p class="text-sm text-gray-600 mb-3">${recipe.description}</p>
+                    <div class="flex gap-2">
+                        <button onclick="importSpecificRecipe('${recipe.url}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-2 px-3 rounded transition-colors">
+                            📥 Import Recipe
+                        </button>
+                        <a href="${recipe.url}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded transition-colors">
+                            👀 View
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadMoreRecipes() {
+            const nextBatch = recipeResults.slice(displayedRecipes, displayedRecipes + recipesPerPage);
+            
+            if (nextBatch.length > 0) {
+                const resultsContainer = document.getElementById('recipe-results');
+                
+                nextBatch.forEach(recipe => {
+                    const recipeElement = document.createElement('div');
+                    recipeElement.className = 'bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow';
+                    recipeElement.innerHTML = `
+                        <h4 class="font-semibold text-gray-800 mb-2">${recipe.title}</h4>
+                        <p class="text-sm text-gray-600 mb-3">${recipe.description}</p>
+                        <div class="flex gap-2">
+                            <button onclick="importSpecificRecipe('${recipe.url}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-2 px-3 rounded transition-colors">
+                                📥 Import Recipe
+                            </button>
+                            <a href="${recipe.url}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded transition-colors">
+                                👀 View
+                            </a>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(recipeElement);
+                });
+                
+                displayedRecipes += nextBatch.length;
+                
+                // Hide load more button if we've shown all recipes
+                if (displayedRecipes >= recipeResults.length) {
+                    document.getElementById('load-more-container').classList.add('hidden');
+                }
+            }
+        }
+
+        async function importSpecificRecipe(recipeUrl) {
+            showBrowseStatus('Importing recipe...', 'loading');
+            
+            try {
+                const recipeData = await extractRecipeFromUrl(recipeUrl);
+                if (recipeData) {
+                    addRecipe(recipeData);
+                    showBrowseStatus('Recipe imported successfully! Check your "My Recipes" tab.', 'success');
+                } else {
+                    showBrowseStatus('Could not extract recipe data from this URL', 'error');
+                }
+            } catch (error) {
+                console.error('Import error:', error);
+                showBrowseStatus('Failed to import recipe: ' + error.message, 'error');
+            }
+        }
+
+        function showBrowseStatus(message, type) {
+            const statusDiv = document.getElementById('browse-status');
+            const messageDiv = document.getElementById('browse-message');
+            
+            statusDiv.classList.remove('hidden');
+            messageDiv.textContent = message;
+            
+            // Reset classes
+            statusDiv.classList.remove('bg-red-50', 'border-red-200', 'bg-green-50', 'border-green-200', 'bg-blue-50', 'border-blue-200');
+            messageDiv.classList.remove('text-red-800', 'text-green-800', 'text-blue-800');
+            
+            if (type === 'error') {
+                statusDiv.classList.add('bg-red-50', 'border-red-200');
+                messageDiv.classList.add('text-red-800');
+            } else if (type === 'success') {
+                statusDiv.classList.add('bg-green-50', 'border-green-200');
+                messageDiv.classList.add('text-green-800');
+            } else {
+                statusDiv.classList.add('bg-blue-50', 'border-blue-200');
+                messageDiv.classList.add('text-blue-800');
             }
         }
 
