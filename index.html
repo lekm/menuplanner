@@ -20,6 +20,9 @@
     window.VITE_SUPABASE_URL = 'https://vriusyvuqwlozqqcpbke.supabase.co';
     window.VITE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXVzeXZ1cXdsb3pxcWNwYmtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTQwMDEsImV4cCI6MjA2Nzk3MDAwMX0.AoKGvVhxDzAaYOAgSVwt4Jhve9-Ck4o2BiD3iHiV8oE';
     
+    // Hugging Face configuration - set via Vercel environment variables
+    // window.VITE_HUGGINGFACE_TOKEN will be injected by Vercel if configured
+    
     // Debug Supabase loading
     console.log('Supabase URL:', window.VITE_SUPABASE_URL);
     console.log('Supabase Key present:', !!window.VITE_SUPABASE_ANON_KEY);
@@ -2855,14 +2858,22 @@ Let's start with the basics - what's your cooking experience level?`;
         }
 
         async function getAIResponse(prompt) {
+            // For now, use smart fallback responses
+            // TODO: Add Hugging Face token via Vercel environment variables for AI responses
+            return getFallbackResponse();
+            
+            /* Disabled until token is configured via Vercel environment variables
             try {
+                if (!window.VITE_HUGGINGFACE_TOKEN) {
+                    return getFallbackResponse();
+                }
+                
                 // Using Hugging Face's free inference API with a conversational model
                 const response = await fetch('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Note: For production, this should be in environment variables
-                        'Authorization': 'Bearer hf_your_token_here'
+                        'Authorization': `Bearer ${window.VITE_HUGGINGFACE_TOKEN}`
                     },
                     body: JSON.stringify({
                         inputs: prompt,
@@ -2885,6 +2896,7 @@ Let's start with the basics - what's your cooking experience level?`;
                 console.error('AI response error:', error);
                 return getFallbackResponse();
             }
+            */
         }
 
         function getFallbackResponse() {
