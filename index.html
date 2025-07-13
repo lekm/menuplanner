@@ -113,7 +113,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2 w-full">
             <!-- Monday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-red-500">
-                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Monday</h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Monday <span id="monday-schedule" class="text-xs text-gray-500"></span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
@@ -153,7 +153,7 @@
 
             <!-- Tuesday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-orange-500">
-                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Tuesday <span class="text-xs text-green-600">(WFH)</span></h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Tuesday <span id="tuesday-schedule" class="text-xs text-gray-500"></span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
@@ -193,7 +193,7 @@
 
             <!-- Wednesday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-yellow-500">
-                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Wednesday</h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Wednesday <span id="wednesday-schedule" class="text-xs text-gray-500"></span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
@@ -233,7 +233,7 @@
 
             <!-- Thursday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-green-500">
-                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Thursday</h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Thursday <span id="thursday-schedule" class="text-xs text-gray-500"></span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
@@ -273,7 +273,7 @@
 
             <!-- Friday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-blue-500">
-                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Friday <span class="text-xs text-orange-600">(WFH→Bar)</span></h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Friday <span id="friday-schedule" class="text-xs text-gray-500"></span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
@@ -313,7 +313,7 @@
 
             <!-- Saturday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-indigo-500">
-                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Saturday <span class="text-xs text-red-600">(Bar Day)</span></h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Saturday <span id="saturday-schedule" class="text-xs text-gray-500"></span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
@@ -353,7 +353,7 @@
 
             <!-- Sunday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-violet-500">
-                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Sunday <span class="text-xs text-blue-600">(Recovery)</span></h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Sunday <span id="sunday-schedule" class="text-xs text-gray-500"></span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
@@ -2706,6 +2706,11 @@
             }
             if (mainApp) {
                 mainApp.classList.remove('hidden');
+                
+                // Load existing schedule labels for returning users
+                setTimeout(() => {
+                    loadExistingScheduleLabels();
+                }, 500);
             }
         }
 
@@ -2889,6 +2894,18 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     enhancedPlan['tuesday'] = { breakfast: testMealPlan.breakfast[1] || testMealPlan.breakfast[0], lunch: testMealPlan.lunch[1] || testMealPlan.lunch[0], dinner: testMealPlan.dinner[1] || testMealPlan.dinner[0] };
                     await window.mealPlannerAPI.saveMealPlan(enhancedPlan);
                     
+                    // Generate and apply test schedule labels
+                    const testScheduleLabels = generateScheduleLabels([
+                        {answer: 'Mid-30s, single professional'},  // age/living
+                        {answer: 'ADHD - needs simple, quick meal options'}, // accessibility
+                        {answer: 'Beginner level, comfortable with basics'}, // cooking
+                        {answer: 'No major restrictions, trying to eat healthier'}, // dietary
+                        {answer: 'Basic setup: stovetop, oven, microwave, blender'}, // equipment
+                        {answer: 'Irregular work schedule, medium energy most days'}, // schedule - key field!
+                        {answer: 'Want to meal prep on weekends, avoid takeout during busy weeks'} // goals
+                    ]);
+                    applyScheduleLabels(testScheduleLabels);
+                    
                     // Update auth UI to show user info
                     updateAuthUI(user);
                     
@@ -2924,6 +2941,18 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                         tuesday: { breakfast: testMealPlan.breakfast[1] || testMealPlan.breakfast[0], lunch: testMealPlan.lunch[1] || testMealPlan.lunch[0], dinner: testMealPlan.dinner[1] || testMealPlan.dinner[0] }
                     };
                     localStorage.setItem('mealPlan', JSON.stringify(enhancedPlan));
+                    
+                    // Generate and apply test schedule labels (fallback case)
+                    const testScheduleLabels = generateScheduleLabels([
+                        {answer: 'Mid-30s, single professional'},
+                        {answer: 'ADHD - needs simple, quick meal options'},
+                        {answer: 'Beginner level, comfortable with basics'},
+                        {answer: 'No major restrictions, trying to eat healthier'},
+                        {answer: 'Basic setup: stovetop, oven, microwave, blender'},
+                        {answer: 'Irregular work schedule, medium energy most days'},
+                        {answer: 'Want to meal prep on weekends, avoid takeout during busy weeks'}
+                    ]);
+                    applyScheduleLabels(testScheduleLabels);
                     
                     // Update auth UI to show user info
                     updateAuthUI(user);
@@ -4007,6 +4036,10 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                 
                 await window.mealPlannerAPI.saveMealPlan(enhancedPlan);
                 
+                // Generate and apply schedule labels
+                const scheduleLabels = generateScheduleLabels(responses);
+                applyScheduleLabels(scheduleLabels);
+                
                 // Show success message
                 addOnboardingMessage('ai', `🎉 **Perfect! I've created personalized meal suggestions and added them to your planner.**
 
@@ -4064,6 +4097,120 @@ These suggestions consider your cooking level, dietary needs, flavor preferences
                 lunch: lunchOptions,
                 dinner: dinnerOptions
             };
+        }
+
+        function generateScheduleLabels(userResponses) {
+            // Extract schedule/energy information from responses
+            const scheduleResponse = userResponses[5]?.answer?.toLowerCase() || '';
+            const workStyle = userResponses[0]?.answer?.toLowerCase() || '';
+            const lifestyle = userResponses[6]?.answer?.toLowerCase() || '';
+            
+            // Default schedule (no labels)
+            const schedule = {
+                monday: '',
+                tuesday: '', 
+                wednesday: '',
+                thursday: '',
+                friday: '',
+                saturday: '',
+                sunday: ''
+            };
+            
+            // Detect work patterns and populate accordingly
+            if (scheduleResponse.includes('9-5') || scheduleResponse.includes('regular') || scheduleResponse.includes('office')) {
+                // Regular 9-5 worker
+                schedule.monday = '(Work Day)';
+                schedule.tuesday = '(Work Day)';
+                schedule.wednesday = '(Work Day)';
+                schedule.thursday = '(Work Day)';
+                schedule.friday = '(Work Day)';
+                schedule.saturday = '(Weekend)';
+                schedule.sunday = '(Weekend)';
+                
+            } else if (scheduleResponse.includes('shift') || scheduleResponse.includes('irregular') || scheduleResponse.includes('bar') || scheduleResponse.includes('restaurant') || scheduleResponse.includes('retail')) {
+                // Shift worker - varies by person, use generic labels
+                schedule.friday = '(Work Night)';
+                schedule.saturday = '(Work Night)';
+                schedule.sunday = '(Recovery)';
+                schedule.monday = '(Prep Day)';
+                
+            } else if (scheduleResponse.includes('student')) {
+                // Student schedule
+                schedule.monday = '(Classes)';
+                schedule.tuesday = '(Classes)';
+                schedule.wednesday = '(Classes)';
+                schedule.thursday = '(Classes)';
+                schedule.friday = '(Study)';
+                schedule.saturday = '(Weekend)';
+                schedule.sunday = '(Study)';
+                
+            } else if (scheduleResponse.includes('freelance') || scheduleResponse.includes('remote') || scheduleResponse.includes('work from home') || workStyle.includes('remote')) {
+                // Remote/freelance worker
+                schedule.monday = '(WFH)';
+                schedule.tuesday = '(WFH)';
+                schedule.wednesday = '(WFH)';
+                schedule.thursday = '(WFH)';
+                schedule.friday = '(WFH)';
+                schedule.saturday = '(Weekend)';
+                schedule.sunday = '(Weekend)';
+                
+            } else if (scheduleResponse.includes('busy') || scheduleResponse.includes('high-stress') || scheduleResponse.includes('demanding')) {
+                // High-stress job
+                schedule.monday = '(Busy)';
+                schedule.tuesday = '(Busy)';
+                schedule.wednesday = '(Busy)';
+                schedule.thursday = '(Busy)';
+                schedule.friday = '(Busy)';
+                schedule.saturday = '(Recovery)';
+                schedule.sunday = '(Prep)';
+            }
+            
+            // If goals mention meal prep or batch cooking, add prep day
+            if (lifestyle.includes('meal prep') || lifestyle.includes('batch cook') || scheduleResponse.includes('weekend prep')) {
+                schedule.sunday = '(Meal Prep)';
+            }
+            
+            return schedule;
+        }
+
+        function applyScheduleLabels(schedule) {
+            // Apply the schedule labels to the day headers
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            
+            days.forEach(day => {
+                const element = document.getElementById(`${day}-schedule`);
+                if (element && schedule[day]) {
+                    element.textContent = schedule[day];
+                    // Add appropriate color based on schedule type
+                    element.className = 'text-xs ' + getScheduleColor(schedule[day]);
+                }
+            });
+        }
+
+        function getScheduleColor(scheduleLabel) {
+            if (scheduleLabel.includes('Work') || scheduleLabel.includes('Classes') || scheduleLabel.includes('Busy')) {
+                return 'text-orange-600'; // Work/busy days
+            } else if (scheduleLabel.includes('Weekend') || scheduleLabel.includes('Recovery')) {
+                return 'text-green-600'; // Rest days
+            } else if (scheduleLabel.includes('Prep') || scheduleLabel.includes('WFH')) {
+                return 'text-blue-600'; // Productive days
+            } else if (scheduleLabel.includes('Study')) {
+                return 'text-purple-600'; // Study days
+            }
+            return 'text-gray-500'; // Default
+        }
+
+        async function loadExistingScheduleLabels() {
+            try {
+                // Try to get user profile and generate schedule labels
+                const profile = await window.mealPlannerAPI.getUserProfile();
+                if (profile && profile.full_conversation) {
+                    const scheduleLabels = generateScheduleLabels(profile.full_conversation);
+                    applyScheduleLabels(scheduleLabels);
+                }
+            } catch (error) {
+                console.log('No existing schedule data found');
+            }
         }
 
         function getFallbackResponse() {
