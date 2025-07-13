@@ -14,19 +14,35 @@
         opacity: .8;
       }
     }
+    .icon-btn.selected {
+        background-color: #3b82f6;
+        color: white;
+    }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="w-full px-2 py-4">
-        <h1 class="text-4xl font-bold text-center text-gray-800 mb-4">Weekly Meal Planner</h1>
+        <h1 class="text-2xl md:text-4xl font-bold text-center text-gray-800 mb-4">Weekly Meal Planner</h1>
+        
+        <!-- Navigation Tabs -->
+        <div class="flex justify-center mb-6">
+            <div class="bg-white rounded-lg shadow-md p-1 flex flex-wrap">
+                <button onclick="switchTab('planner')" id="tab-planner" class="px-3 md:px-4 py-2 rounded-md text-xs md:text-sm font-medium transition-colors bg-blue-500 text-white">📅 Planner</button>
+                <button onclick="switchTab('recipes')" id="tab-recipes" class="px-3 md:px-4 py-2 rounded-md text-xs md:text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100">📖 My Recipes</button>
+                <button onclick="switchTab('templates')" id="tab-templates" class="px-3 md:px-4 py-2 rounded-md text-xs md:text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100">📋 Templates</button>
+            </div>
+        </div>
+        
+        <!-- Planner Tab Content -->
+        <div id="planner-content">
         
         <!-- Energy Level Selector -->
         <div class="flex justify-center mb-6">
-            <div class="bg-white rounded-lg shadow-md p-4 flex gap-4">
-                <span class="text-sm font-medium text-gray-700 self-center">Today's Energy:</span>
-                <button onclick="setEnergyLevel('high')" id="energy-high" class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-green-100 text-green-800 hover:bg-green-200">🚀 High Energy</button>
-                <button onclick="setEnergyLevel('medium')" id="energy-medium" class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-yellow-100 text-yellow-800 hover:bg-yellow-200">⚡ Medium Energy</button>
-                <button onclick="setEnergyLevel('low')" id="energy-low" class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-red-100 text-red-800 hover:bg-red-200">😴 Survival Mode</button>
+            <div class="bg-white rounded-lg shadow-md p-2 md:p-4 flex flex-wrap gap-2 md:gap-4">
+                <span class="text-xs md:text-sm font-medium text-gray-700 self-center w-full md:w-auto text-center md:text-left">Today's Energy:</span>
+                <button onclick="setEnergyLevel('high')" id="energy-high" class="px-3 py-2 md:px-4 rounded-md text-xs md:text-sm font-medium transition-colors bg-green-100 text-green-800 hover:bg-green-200 flex-1 md:flex-none">🚀 High Energy</button>
+                <button onclick="setEnergyLevel('medium')" id="energy-medium" class="px-3 py-2 md:px-4 rounded-md text-xs md:text-sm font-medium transition-colors bg-yellow-100 text-yellow-800 hover:bg-yellow-200 flex-1 md:flex-none">⚡ Medium Energy</button>
+                <button onclick="setEnergyLevel('low')" id="energy-low" class="px-3 py-2 md:px-4 rounded-md text-xs md:text-sm font-medium transition-colors bg-red-100 text-red-800 hover:bg-red-200 flex-1 md:flex-none">😴 Survival Mode</button>
             </div>
         </div>
         
@@ -38,246 +54,460 @@
             </div>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-7 gap-2 w-full">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2 w-full">
             <!-- Monday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-red-500">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Monday</h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Monday</h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
-                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter breakfast meal..."></textarea>
+                        <h3 class="font-medium text-yellow-800 mb-1 text-xs md:text-sm">Breakfast</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter breakfast meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
-                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter lunch meal..."></textarea>
+                        <h3 class="font-medium text-orange-800 mb-1 text-xs md:text-sm">Lunch</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter lunch meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
-                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter dinner meal..."></textarea>
+                        <h3 class="font-medium text-purple-800 mb-1 text-xs md:text-sm">Dinner</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter dinner meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Tuesday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-orange-500">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Tuesday <span class="text-xs text-green-600">(WFH)</span></h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Tuesday <span class="text-xs text-green-600">(WFH)</span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
-                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter breakfast meal..."></textarea>
+                        <h3 class="font-medium text-yellow-800 mb-1 text-xs md:text-sm">Breakfast</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter breakfast meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
-                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter lunch meal..."></textarea>
+                        <h3 class="font-medium text-orange-800 mb-1 text-xs md:text-sm">Lunch</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter lunch meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
-                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter dinner meal..."></textarea>
+                        <h3 class="font-medium text-purple-800 mb-1 text-xs md:text-sm">Dinner</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter dinner meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Wednesday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-yellow-500">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Wednesday</h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Wednesday</h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
-                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter breakfast meal..."></textarea>
+                        <h3 class="font-medium text-yellow-800 mb-1 text-xs md:text-sm">Breakfast</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter breakfast meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
-                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter lunch meal..."></textarea>
+                        <h3 class="font-medium text-orange-800 mb-1 text-xs md:text-sm">Lunch</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter lunch meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
-                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter dinner meal..."></textarea>
+                        <h3 class="font-medium text-purple-800 mb-1 text-xs md:text-sm">Dinner</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter dinner meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Thursday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-green-500">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Thursday</h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Thursday</h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
-                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter breakfast meal..."></textarea>
+                        <h3 class="font-medium text-yellow-800 mb-1 text-xs md:text-sm">Breakfast</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter breakfast meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
-                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter lunch meal..."></textarea>
+                        <h3 class="font-medium text-orange-800 mb-1 text-xs md:text-sm">Lunch</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter lunch meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
-                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter dinner meal..."></textarea>
+                        <h3 class="font-medium text-purple-800 mb-1 text-xs md:text-sm">Dinner</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter dinner meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Friday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-blue-500">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Friday <span class="text-xs text-orange-600">(WFH→Bar)</span></h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Friday <span class="text-xs text-orange-600">(WFH→Bar)</span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
-                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter breakfast meal..."></textarea>
+                        <h3 class="font-medium text-yellow-800 mb-1 text-xs md:text-sm">Breakfast</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter breakfast meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
-                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter lunch meal..."></textarea>
+                        <h3 class="font-medium text-orange-800 mb-1 text-xs md:text-sm">Lunch</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter lunch meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
-                        <h3 class="font-medium text-purple-800 mb-1">Pre-Bar Dinner</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Quick meal before bar shift..."></textarea>
+                        <h3 class="font-medium text-purple-800 mb-1 text-xs md:text-sm">Pre-Bar Dinner</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Quick meal before bar shift..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Saturday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-indigo-500">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Saturday <span class="text-xs text-red-600">(Bar Day)</span></h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Saturday <span class="text-xs text-red-600">(Bar Day)</span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
-                        <h3 class="font-medium text-yellow-800 mb-1">Late Breakfast</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Recovery breakfast..."></textarea>
+                        <h3 class="font-medium text-yellow-800 mb-1 text-xs md:text-sm">Late Breakfast</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Recovery breakfast..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
-                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter lunch meal..."></textarea>
+                        <h3 class="font-medium text-orange-800 mb-1 text-xs md:text-sm">Lunch</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter lunch meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
-                        <h3 class="font-medium text-purple-800 mb-1">Pre-Bar Dinner</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Quick meal before bar shift..."></textarea>
+                        <h3 class="font-medium text-purple-800 mb-1 text-xs md:text-sm">Pre-Bar Dinner</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Quick meal before bar shift..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Sunday -->
             <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-violet-500">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Sunday <span class="text-xs text-blue-600">(Recovery)</span></h2>
+                <h2 class="text-sm md:text-lg font-semibold text-gray-800 mb-2 text-center">Sunday <span class="text-xs text-blue-600">(Recovery)</span></h2>
                 
                 <div class="space-y-2">
                     <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
-                        <h3 class="font-medium text-yellow-800 mb-1">Late Breakfast</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Recovery breakfast..."></textarea>
+                        <h3 class="font-medium text-yellow-800 mb-1 text-xs md:text-sm">Late Breakfast</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Recovery breakfast..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
-                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter lunch meal..."></textarea>
+                        <h3 class="font-medium text-orange-800 mb-1 text-xs md:text-sm">Lunch</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter lunch meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                     
                     <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
-                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
-                        <textarea 
-                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
-                            rows="4" 
-                            placeholder="Enter dinner meal..."></textarea>
+                        <h3 class="font-medium text-purple-800 mb-1 text-xs md:text-sm">Dinner</h3>
+                        <div class="relative">
+                            <textarea 
+                                class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm" 
+                                rows="3" 
+                                placeholder="Enter dinner meal..."></textarea>
+                            <button onclick="showRecipePicker(this)" class="absolute top-1 right-1 text-gray-400 hover:text-blue-500 text-sm">📖</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Save/Clear buttons -->
-        <div class="flex justify-center mt-8 space-x-4">
+        <div class="flex flex-wrap justify-center mt-8 gap-2">
             <button 
                 onclick="saveMealPlan()" 
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
-                Save Plan
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 md:px-6 rounded-lg shadow-md transition duration-200 text-sm md:text-base">
+                💾 Save Plan
             </button>
             <button 
                 onclick="clearMealPlan()" 
-                class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
-                Clear All
+                class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 md:px-6 rounded-lg shadow-md transition duration-200 text-sm md:text-base">
+                🗑️ Clear All
             </button>
             <button 
                 onclick="generateGroceryList()" 
-                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
-                Generate Grocery List
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 md:px-6 rounded-lg shadow-md transition duration-200 text-sm md:text-base">
+                🛒 Grocery List
             </button>
+            <button 
+                onclick="saveAsTemplate()" 
+                class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 md:px-6 rounded-lg shadow-md transition duration-200 text-sm md:text-base">
+                📋 Save Template
+            </button>
+        </div>
+        
+        </div> <!-- End Planner Content -->
+        
+        <!-- Recipes Tab Content -->
+        <div id="recipes-content" class="hidden">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800">My Recipe Collection</h2>
+                    <button onclick="showAddRecipeModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+                        ➕ Add Recipe
+                    </button>
+                </div>
+                
+                <!-- Recipe Search -->
+                <div class="mb-4">
+                    <input type="text" id="recipe-search" placeholder="Search recipes..." onkeyup="filterRecipes()" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <!-- Recipe Grid -->
+                <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Recipes will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Templates Tab Content -->
+        <div id="templates-content" class="hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">Weekly Meal Templates</h2>
+                
+                <!-- Pre-built Templates -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8" id="built-in-templates">
+                    <!-- Templates will be populated here -->
+                </div>
+                
+                <!-- Saved Templates -->
+                <div id="saved-templates">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Your Saved Templates</h3>
+                    <div id="saved-templates-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- User templates will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Recipe Modal -->
+        <div id="add-recipe-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Add New Recipe</h3>
+                    <button onclick="hideAddRecipeModal()" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                </div>
+                
+                <form id="recipe-form">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Recipe Name</label>
+                        <input type="text" id="recipe-name" required class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Energy Level</label>
+                        <select id="recipe-energy" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                            <option value="high">🚀 High Energy</option>
+                            <option value="medium">⚡ Medium Energy</option>
+                            <option value="low">😴 Survival Mode</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Equipment</label>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <label><input type="checkbox" value="instant-pot" class="mr-1"> Instant Pot</label>
+                            <label><input type="checkbox" value="cast-iron" class="mr-1"> Cast Iron</label>
+                            <label><input type="checkbox" value="sous-vide" class="mr-1"> Sous Vide</label>
+                            <label><input type="checkbox" value="pizza-oven" class="mr-1"> Pizza Oven</label>
+                            <label><input type="checkbox" value="air-fryer" class="mr-1"> Air Fryer</label>
+                            <label><input type="checkbox" value="blender" class="mr-1"> Blender</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cooking Time (minutes)</label>
+                        <input type="number" id="recipe-time" min="5" max="300" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ingredients (one per line)</label>
+                        <textarea id="recipe-ingredients" rows="6" placeholder="1 lb ground beef&#10;2 tbsp olive oil&#10;1 onion, diced" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Instructions</label>
+                        <textarea id="recipe-instructions" rows="4" placeholder="Brief cooking instructions..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Recipe Icon</label>
+                        <div class="grid grid-cols-8 gap-2 text-xl">
+                            <button type="button" onclick="selectIcon('🍝')" class="icon-btn p-2 border rounded hover:bg-gray-100">🍝</button>
+                            <button type="button" onclick="selectIcon('🥗')" class="icon-btn p-2 border rounded hover:bg-gray-100">🥗</button>
+                            <button type="button" onclick="selectIcon('🍖')" class="icon-btn p-2 border rounded hover:bg-gray-100">🍖</button>
+                            <button type="button" onclick="selectIcon('🍲')" class="icon-btn p-2 border rounded hover:bg-gray-100">🍲</button>
+                            <button type="button" onclick="selectIcon('🍳')" class="icon-btn p-2 border rounded hover:bg-gray-100">🍳</button>
+                            <button type="button" onclick="selectIcon('🥘')" class="icon-btn p-2 border rounded hover:bg-gray-100">🥘</button>
+                            <button type="button" onclick="selectIcon('🍕')" class="icon-btn p-2 border rounded hover:bg-gray-100">🍕</button>
+                            <button type="button" onclick="selectIcon('🥪')" class="icon-btn p-2 border rounded hover:bg-gray-100">🥪</button>
+                        </div>
+                        <input type="hidden" id="recipe-icon" value="🍽️">
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                            Save Recipe
+                        </button>
+                        <button type="button" onclick="hideAddRecipeModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition duration-200">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Recipe Picker Modal -->
+        <div id="recipe-picker-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Choose a Recipe</h3>
+                    <button onclick="hideRecipePicker()" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                </div>
+                
+                <div class="mb-4">
+                    <input type="text" id="recipe-picker-search" placeholder="Search recipes..." onkeyup="filterRecipePicker()" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <div id="recipe-picker-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Recipe options will be populated here -->
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // Global variables
+        let currentTextarea = null;
+        let recipes = JSON.parse(localStorage.getItem('recipes')) || [];
+        let savedTemplates = JSON.parse(localStorage.getItem('savedTemplates')) || [];
+        
         // Energy-based meal suggestions tailored to your lifestyle
         const mealSuggestions = {
             high: {
@@ -321,6 +551,63 @@
             }
         };
 
+        // Built-in templates
+        const builtInTemplates = [
+            {
+                name: "High Energy Week",
+                description: "For when you're motivated to cook complex meals",
+                meals: {
+                    Monday: { Breakfast: "🥣 Overnight oats with fruit", Lunch: "🥗 Grain bowl with protein", Dinner: "🍖 Instant Pot Lamb Ragu" },
+                    Tuesday: { Breakfast: "🍳 Veggie scramble", Lunch: "🌯 Leftover ragu wrap", Dinner: "🍕 Homemade pizza" },
+                    Wednesday: { Breakfast: "🥤 Green smoothie", Lunch: "🍕 Pizza leftovers", Dinner: "🥩 Sous vide steak" },
+                    Thursday: { Breakfast: "🍞 Avocado toast", Lunch: "🥗 Steak salad", Dinner: "🍛 Complex curry" },
+                    Friday: { Breakfast: "🥣 Yogurt parfait", Lunch: "🍛 Curry leftovers", "Pre-Bar Dinner": "🍳 Quick pasta" },
+                    Saturday: { "Late Breakfast": "🥞 Weekend pancakes", Lunch: "🥪 Deli sandwich", "Pre-Bar Dinner": "🥘 Moroccan tagine" },
+                    Sunday: { "Late Breakfast": "🍳 Big breakfast", Lunch: "🥘 Tagine leftovers", Dinner: "🍲 Cast iron short ribs" }
+                }
+            },
+            {
+                name: "Survival Mode Week", 
+                description: "Low energy, anti-takeaway options",
+                meals: {
+                    Monday: { Breakfast: "🥣 Good cereal", Lunch: "🥪 Quality sandwich", Dinner: "🍝 Pasta with jarred sauce" },
+                    Tuesday: { Breakfast: "🍞 Fancy toast", Lunch: "🥗 Pre-made salad", Dinner: "🍲 Dinner Ladies meal" },
+                    Wednesday: { Breakfast: "🥤 Smoothie", Lunch: "🍝 Pasta leftovers", Dinner: "🧀 Cheese and crackers" },
+                    Thursday: { Breakfast: "🥣 Overnight oats", Lunch: "🥪 Another sandwich", Dinner: "🥗 Salad with protein" },
+                    Friday: { Breakfast: "🍞 Toast", Lunch: "🥤 Smoothie bowl", "Pre-Bar Dinner": "🍝 Quick pasta" },
+                    Saturday: { "Late Breakfast": "🥣 Recovery cereal", Lunch: "🥪 Easy wrap", "Pre-Bar Dinner": "🍲 Microwave meal" },
+                    Sunday: { "Late Breakfast": "🍞 Comfort toast", Lunch: "🧀 Cheese board", Dinner: "🥗 Simple salad" }
+                }
+            }
+        ];
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all content
+            document.getElementById('planner-content').classList.add('hidden');
+            document.getElementById('recipes-content').classList.add('hidden');
+            document.getElementById('templates-content').classList.add('hidden');
+            
+            // Show selected content
+            document.getElementById(tabName + '-content').classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('bg-blue-500', 'text-white');
+                btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+            });
+            
+            document.getElementById('tab-' + tabName).classList.add('bg-blue-500', 'text-white');
+            document.getElementById('tab-' + tabName).classList.remove('text-gray-700', 'hover:bg-gray-100');
+            
+            // Load content if needed
+            if (tabName === 'recipes') {
+                loadRecipes();
+            } else if (tabName === 'templates') {
+                loadTemplates();
+            }
+        }
+
         function setEnergyLevel(level) {
             // Update button states
             document.querySelectorAll('[id^="energy-"]').forEach(btn => {
@@ -348,7 +635,7 @@
 
         function quickAddMeal(meal) {
             // Find the first empty textarea and add the meal
-            const textareas = document.querySelectorAll('textarea');
+            const textareas = document.querySelectorAll('#planner-content textarea');
             for (let textarea of textareas) {
                 if (!textarea.value.trim()) {
                     textarea.value = meal;
@@ -358,8 +645,308 @@
             }
         }
 
+        // Recipe management
+        function showAddRecipeModal() {
+            document.getElementById('add-recipe-modal').classList.remove('hidden');
+        }
+
+        function hideAddRecipeModal() {
+            document.getElementById('add-recipe-modal').classList.add('hidden');
+            document.getElementById('recipe-form').reset();
+        }
+
+        function selectIcon(icon) {
+            document.querySelectorAll('.icon-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            document.getElementById('recipe-icon').value = icon;
+        }
+
+        document.getElementById('recipe-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const equipment = Array.from(document.querySelectorAll('#add-recipe-modal input[type="checkbox"]:checked')).map(cb => cb.value);
+            
+            const recipe = {
+                id: Date.now(),
+                name: document.getElementById('recipe-name').value,
+                energy: document.getElementById('recipe-energy').value,
+                equipment: equipment,
+                time: document.getElementById('recipe-time').value,
+                ingredients: document.getElementById('recipe-ingredients').value.split('\n').filter(i => i.trim()),
+                instructions: document.getElementById('recipe-instructions').value,
+                icon: document.getElementById('recipe-icon').value || '🍽️'
+            };
+            
+            recipes.push(recipe);
+            localStorage.setItem('recipes', JSON.stringify(recipes));
+            loadRecipes();
+            hideAddRecipeModal();
+        });
+
+        function loadRecipes() {
+            const grid = document.getElementById('recipes-grid');
+            if (recipes.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No recipes yet. Add your first recipe!</div>';
+                return;
+            }
+            
+            grid.innerHTML = recipes.map(recipe => `
+                <div class="bg-white rounded-lg shadow-md p-4 border hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-2xl">${recipe.icon}</div>
+                        <div class="flex gap-1">
+                            <button onclick="useRecipe('${recipe.name}')" class="text-blue-500 hover:text-blue-700 text-sm">Use</button>
+                            <button onclick="deleteRecipe(${recipe.id})" class="text-red-500 hover:text-red-700 text-sm">Delete</button>
+                        </div>
+                    </div>
+                    <h3 class="font-semibold text-gray-800 mb-1">${recipe.name}</h3>
+                    <div class="text-xs text-gray-600 mb-2">
+                        ${recipe.energy === 'high' ? '🚀 High Energy' : recipe.energy === 'medium' ? '⚡ Medium Energy' : '😴 Survival Mode'}
+                        ${recipe.time ? ` • ${recipe.time} min` : ''}
+                    </div>
+                    <div class="text-xs text-gray-500 mb-2">
+                        ${recipe.equipment.length > 0 ? recipe.equipment.join(', ') : 'No special equipment'}
+                    </div>
+                    <div class="text-sm text-gray-700 mb-2">
+                        <strong>Ingredients:</strong> ${recipe.ingredients.slice(0, 3).join(', ')}${recipe.ingredients.length > 3 ? '...' : ''}
+                    </div>
+                    ${recipe.instructions ? `<div class="text-sm text-gray-600">${recipe.instructions.substring(0, 100)}${recipe.instructions.length > 100 ? '...' : ''}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function filterRecipes() {
+            const search = document.getElementById('recipe-search').value.toLowerCase();
+            const filteredRecipes = recipes.filter(recipe => 
+                recipe.name.toLowerCase().includes(search) ||
+                recipe.ingredients.some(ing => ing.toLowerCase().includes(search))
+            );
+            
+            const grid = document.getElementById('recipes-grid');
+            grid.innerHTML = filteredRecipes.map(recipe => `
+                <div class="bg-white rounded-lg shadow-md p-4 border hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-2xl">${recipe.icon}</div>
+                        <div class="flex gap-1">
+                            <button onclick="useRecipe('${recipe.name}')" class="text-blue-500 hover:text-blue-700 text-sm">Use</button>
+                            <button onclick="deleteRecipe(${recipe.id})" class="text-red-500 hover:text-red-700 text-sm">Delete</button>
+                        </div>
+                    </div>
+                    <h3 class="font-semibold text-gray-800 mb-1">${recipe.name}</h3>
+                    <div class="text-xs text-gray-600 mb-2">
+                        ${recipe.energy === 'high' ? '🚀 High Energy' : recipe.energy === 'medium' ? '⚡ Medium Energy' : '😴 Survival Mode'}
+                        ${recipe.time ? ` • ${recipe.time} min` : ''}
+                    </div>
+                    <div class="text-xs text-gray-500 mb-2">
+                        ${recipe.equipment.length > 0 ? recipe.equipment.join(', ') : 'No special equipment'}
+                    </div>
+                    <div class="text-sm text-gray-700 mb-2">
+                        <strong>Ingredients:</strong> ${recipe.ingredients.slice(0, 3).join(', ')}${recipe.ingredients.length > 3 ? '...' : ''}
+                    </div>
+                    ${recipe.instructions ? `<div class="text-sm text-gray-600">${recipe.instructions.substring(0, 100)}${recipe.instructions.length > 100 ? '...' : ''}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function deleteRecipe(id) {
+            if (confirm('Are you sure you want to delete this recipe?')) {
+                recipes = recipes.filter(r => r.id !== id);
+                localStorage.setItem('recipes', JSON.stringify(recipes));
+                loadRecipes();
+            }
+        }
+
+        function useRecipe(recipeName) {
+            const textareas = document.querySelectorAll('#planner-content textarea');
+            for (let textarea of textareas) {
+                if (!textarea.value.trim()) {
+                    textarea.value = recipeName;
+                    textarea.focus();
+                    switchTab('planner');
+                    break;
+                }
+            }
+        }
+
+        // Recipe picker
+        function showRecipePicker(button) {
+            currentTextarea = button.parentElement.querySelector('textarea');
+            document.getElementById('recipe-picker-modal').classList.remove('hidden');
+            loadRecipePicker();
+        }
+
+        function hideRecipePicker() {
+            document.getElementById('recipe-picker-modal').classList.add('hidden');
+            currentTextarea = null;
+        }
+
+        function loadRecipePicker() {
+            const grid = document.getElementById('recipe-picker-grid');
+            const allOptions = [...recipes.map(r => ({ name: r.name, icon: r.icon, type: 'recipe' }))];
+            
+            // Add energy-based suggestions
+            Object.entries(mealSuggestions).forEach(([energy, data]) => {
+                data.meals.forEach(meal => {
+                    allOptions.push({ name: meal, icon: '💡', type: 'suggestion' });
+                });
+            });
+            
+            grid.innerHTML = allOptions.map(option => `
+                <div class="bg-gray-50 hover:bg-blue-50 p-3 rounded-lg cursor-pointer border transition-colors" 
+                     onclick="selectRecipeOption('${option.name.replace(/'/g, "\\'")}')">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">${option.icon}</span>
+                        <span class="text-sm">${option.name}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectRecipeOption(name) {
+            if (currentTextarea) {
+                currentTextarea.value = name;
+                hideRecipePicker();
+            }
+        }
+
+        function filterRecipePicker() {
+            const search = document.getElementById('recipe-picker-search').value.toLowerCase();
+            const options = document.querySelectorAll('#recipe-picker-grid > div');
+            
+            options.forEach(option => {
+                const text = option.textContent.toLowerCase();
+                if (text.includes(search)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+
+        // Templates
+        function loadTemplates() {
+            const builtInGrid = document.getElementById('built-in-templates');
+            builtInGrid.innerHTML = builtInTemplates.map(template => `
+                <div class="bg-white rounded-lg shadow-md p-6 border hover:shadow-lg transition-shadow">
+                    <h3 class="font-semibold text-gray-800 mb-2">${template.name}</h3>
+                    <p class="text-sm text-gray-600 mb-4">${template.description}</p>
+                    <button onclick="loadTemplate('${template.name}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                        Load Template
+                    </button>
+                </div>
+            `).join('');
+            
+            const savedGrid = document.getElementById('saved-templates-grid');
+            if (savedTemplates.length === 0) {
+                savedGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">No saved templates yet.</div>';
+            } else {
+                savedGrid.innerHTML = savedTemplates.map(template => `
+                    <div class="bg-white rounded-lg shadow-md p-6 border hover:shadow-lg transition-shadow">
+                        <h3 class="font-semibold text-gray-800 mb-2">${template.name}</h3>
+                        <p class="text-sm text-gray-600 mb-4">Saved on ${new Date(template.created).toLocaleDateString()}</p>
+                        <div class="flex gap-2">
+                            <button onclick="loadUserTemplate(${template.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                                Load
+                            </button>
+                            <button onclick="deleteTemplate(${template.id})" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function loadTemplate(templateName) {
+            const template = builtInTemplates.find(t => t.name === templateName);
+            if (template) {
+                const textareas = document.querySelectorAll('#planner-content textarea');
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const meals = ['Breakfast', 'Lunch', 'Dinner'];
+                
+                days.forEach((day, dayIndex) => {
+                    meals.forEach((meal, mealIndex) => {
+                        const textareaIndex = dayIndex * 3 + mealIndex;
+                        const mealKey = Object.keys(template.meals[day])[mealIndex];
+                        if (template.meals[day] && template.meals[day][mealKey]) {
+                            textareas[textareaIndex].value = template.meals[day][mealKey];
+                        }
+                    });
+                });
+                
+                switchTab('planner');
+                alert('Template loaded successfully!');
+            }
+        }
+
+        function saveAsTemplate() {
+            const name = prompt('Enter a name for this template:');
+            if (!name) return;
+            
+            const textareas = document.querySelectorAll('#planner-content textarea');
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const meals = ['Breakfast', 'Lunch', 'Dinner'];
+            const templateMeals = {};
+            
+            days.forEach((day, dayIndex) => {
+                templateMeals[day] = {};
+                meals.forEach((meal, mealIndex) => {
+                    const textareaIndex = dayIndex * 3 + mealIndex;
+                    const value = textareas[textareaIndex].value.trim();
+                    if (value) {
+                        templateMeals[day][meal] = value;
+                    }
+                });
+            });
+            
+            const template = {
+                id: Date.now(),
+                name: name,
+                meals: templateMeals,
+                created: Date.now()
+            };
+            
+            savedTemplates.push(template);
+            localStorage.setItem('savedTemplates', JSON.stringify(savedTemplates));
+            alert('Template saved successfully!');
+        }
+
+        function loadUserTemplate(id) {
+            const template = savedTemplates.find(t => t.id === id);
+            if (template) {
+                const textareas = document.querySelectorAll('#planner-content textarea');
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const meals = ['Breakfast', 'Lunch', 'Dinner'];
+                
+                // Clear all textareas first
+                textareas.forEach(textarea => textarea.value = '');
+                
+                days.forEach((day, dayIndex) => {
+                    if (template.meals[day]) {
+                        Object.entries(template.meals[day]).forEach(([meal, value], mealIndex) => {
+                            const textareaIndex = dayIndex * 3 + mealIndex;
+                            if (textareas[textareaIndex]) {
+                                textareas[textareaIndex].value = value;
+                            }
+                        });
+                    }
+                });
+                
+                switchTab('planner');
+                alert('Template loaded successfully!');
+            }
+        }
+
+        function deleteTemplate(id) {
+            if (confirm('Are you sure you want to delete this template?')) {
+                savedTemplates = savedTemplates.filter(t => t.id !== id);
+                localStorage.setItem('savedTemplates', JSON.stringify(savedTemplates));
+                loadTemplates();
+            }
+        }
+
         function generateGroceryList() {
-            const textareas = document.querySelectorAll('textarea');
+            const textareas = document.querySelectorAll('#planner-content textarea');
             const meals = [];
             
             textareas.forEach(textarea => {
@@ -433,7 +1020,7 @@
         }
 
         function saveMealPlan() {
-            const textareas = document.querySelectorAll('textarea');
+            const textareas = document.querySelectorAll('#planner-content textarea');
             const mealPlan = {};
             
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -453,7 +1040,7 @@
 
         function clearMealPlan() {
             if (confirm('Are you sure you want to clear all meals?')) {
-                document.querySelectorAll('textarea').forEach(textarea => {
+                document.querySelectorAll('#planner-content textarea').forEach(textarea => {
                     textarea.value = '';
                 });
                 localStorage.removeItem('mealPlan');
@@ -464,7 +1051,7 @@
             const savedPlan = localStorage.getItem('mealPlan');
             if (savedPlan) {
                 const mealPlan = JSON.parse(savedPlan);
-                const textareas = document.querySelectorAll('textarea');
+                const textareas = document.querySelectorAll('#planner-content textarea');
                 
                 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                 const meals = ['Breakfast', 'Lunch', 'Dinner'];
