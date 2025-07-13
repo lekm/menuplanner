@@ -1980,25 +1980,10 @@
                     if (window.mealPlannerAPI.isSupabaseReady()) {
                         const user = window.mealPlannerAPI.getCurrentUser();
                         if (user) {
-                            // Reset profile to default state
+                            // Reset profile to default state (using only core fields to avoid 400 errors)
                             await window.mealPlannerAPI.updateUserProfile({
                                 display_name: user.user_metadata?.display_name || user.email.split('@')[0],
-                                onboarding_completed: false,
-                                onboarding_type: 'reset',
-                                full_conversation: [],
-                                // Clear all onboarding fields
-                                age_range: '',
-                                living_situation: '',
-                                accessibility_needs: '',
-                                cooking_background: '',
-                                dietary_needs: '',
-                                kitchen_equipment: '',
-                                schedule_energy: '',
-                                goals_challenges: '',
-                                skills_comfort: '',
-                                flavor_preferences: '',
-                                planning_style: '',
-                                breakfast_preferences: ''
+                                onboarding_completed: false
                             });
                         }
                     } else {
@@ -2947,25 +2932,11 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             if (confirm('Use test data to quickly complete onboarding? This will skip the conversation and set up a sample profile.')) {
                 const user = window.mealPlannerAPI.getCurrentUser();
                 
-                // Sample test data profile
+                // Sample test data profile (using only core fields to avoid 400 errors)
                 const testProfileData = {
                     display_name: 'Test User',
-                    onboarding_type: 'conversational',
-                    age_range: 'Mid-30s, single professional',
-                    living_situation: 'Studio apartment, lives alone',
-                    accessibility_needs: 'ADHD - needs simple, quick meal options',
-                    cooking_background: 'Beginner level, comfortable with basics',
-                    dietary_needs: 'No major restrictions, trying to eat healthier',
-                    kitchen_equipment: 'Basic setup: stovetop, oven, microwave, blender',
-                    schedule_energy: 'Irregular work schedule, medium energy most days',
-                    goals_challenges: 'Want to meal prep on weekends, avoid takeout during busy weeks',
-                    skills_comfort: 'Comfortable with simple recipes, want to learn new techniques',
-                    flavor_preferences: 'Italian, Asian, comfort foods, not too spicy',
-                    planning_style: 'Batch cook on weekends, quick assembly during week',
-                    breakfast_preferences: 'Light breakfast (toast, cereal, yogurt), Traditional breakfast around 7-9am',
                     onboarding_completed: true,
-                    onboarding_date: new Date().toISOString(),
-                    profile_version: '5.0'
+                    onboarding_date: new Date().toISOString()
                 };
                 
                 try {
@@ -3362,6 +3333,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
         }
 
         function toggleQuickSelect(button, value, allowMultiple) {
+            console.log('🔘 Button clicked:', value, 'allowMultiple:', allowMultiple);
             if (allowMultiple) {
                 // Multi-select mode
                 button.classList.toggle('selected');
@@ -4511,6 +4483,14 @@ These suggestions consider your cooking level, dietary needs, flavor preferences
                 loadingFallback.style.display = 'none';
             }
             
+            // Debug: Check if critical functions are defined
+            console.log('🔍 Function check:', {
+                toggleQuickSelect: typeof toggleQuickSelect,
+                showQuickSelectWithText: typeof showQuickSelectWithText,
+                generateAndSaveMealPlan: typeof generateAndSaveMealPlan,
+                completeDetailedOnboarding: typeof completeDetailedOnboarding
+            });
+
             // Check authentication immediately
             function initializeAuth() {
                 console.log('🔍 Checking if API is ready...', !!window.mealPlannerAPI);
