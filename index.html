@@ -2786,7 +2786,7 @@
         let onboardingConversation = [];
         let onboardingStep = 0;
         let userOnboardingData = {};
-        let onboardingCompleted = false; // Flag to prevent restart loops
+        let onboardingCompleted = sessionStorage.getItem('onboardingCompleted') === 'true'; // Flag to prevent restart loops
 
         async function startAIOnboarding(user) {
             onboardingConversation = [];
@@ -2868,8 +2868,12 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     await window.mealPlannerAPI.updateUserProfile(testProfileData);
                     console.log('✅ Test profile saved successfully');
                     
-                    // Set completion flag
+                    // Set completion flag and persist it
                     onboardingCompleted = true;
+                    sessionStorage.setItem('onboardingCompleted', 'true');
+                    
+                    // Update auth UI to show user info
+                    updateAuthUI(user);
                     
                     // Hide onboarding modal and show success
                     document.getElementById('onboarding-modal').classList.add('hidden');
@@ -2886,6 +2890,10 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     // Fallback to localStorage
                     localStorage.setItem('userProfile', JSON.stringify(testProfileData));
                     onboardingCompleted = true;
+                    sessionStorage.setItem('onboardingCompleted', 'true');
+                    
+                    // Update auth UI to show user info
+                    updateAuthUI(user);
                     
                     document.getElementById('onboarding-modal').classList.add('hidden');
                     showOnboardingComplete();
@@ -2904,6 +2912,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                 onboardingStep = 0;
                 userOnboardingData = {};
                 onboardingCompleted = false; // Reset completion flag
+                sessionStorage.removeItem('onboardingCompleted');
                 const user = window.mealPlannerAPI.getCurrentUser();
                 if (user) {
                     startAIOnboarding(user);
