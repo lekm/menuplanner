@@ -796,6 +796,9 @@
                 <button onclick="showProfileModal()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     ⚙️ Profile Settings
                 </button>
+                <button onclick="resetOnboardingFromMenu()" class="w-full text-left px-4 py-2 text-sm text-orange-600 hover:bg-gray-100">
+                    🔄 Reset Onboarding
+                </button>
                 <button onclick="exportData()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     📤 Export Data
                 </button>
@@ -1960,6 +1963,59 @@
                 console.error('Error changing password:', error);
                 errorMessage.textContent = error.message || 'Failed to change password';
                 errorDiv.classList.remove('hidden');
+            }
+        }
+
+        async function resetOnboardingFromMenu() {
+            // Close menu first
+            document.getElementById('user-menu').classList.add('hidden');
+            
+            if (confirm('🔄 Reset Onboarding?\n\nThis will clear your profile and restart the onboarding process. Your meal plans and recipes will be preserved.\n\nAre you sure?')) {
+                try {
+                    // Clear onboarding completion flags
+                    onboardingCompleted = false;
+                    sessionStorage.removeItem('onboardingCompleted');
+                    
+                    // Clear user profile data but preserve other data
+                    if (window.mealPlannerAPI.isSupabaseReady()) {
+                        const user = window.mealPlannerAPI.getCurrentUser();
+                        if (user) {
+                            // Reset profile to default state
+                            await window.mealPlannerAPI.updateUserProfile({
+                                display_name: user.user_metadata?.display_name || user.email.split('@')[0],
+                                onboarding_completed: false,
+                                onboarding_type: null,
+                                full_conversation: null
+                            });
+                        }
+                    } else {
+                        // Clear localStorage profile but preserve meal plans and recipes
+                        localStorage.removeItem('userProfile');
+                    }
+                    
+                    // Clear schedule labels
+                    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                    days.forEach(day => {
+                        const element = document.getElementById(`${day}-schedule`);
+                        if (element) {
+                            element.textContent = '';
+                            element.className = 'text-xs text-gray-500';
+                        }
+                    });
+                    
+                    // Show success message and restart onboarding
+                    alert('✅ Onboarding reset! You\'ll now go through the setup process again.');
+                    
+                    // Trigger onboarding flow
+                    const user = window.mealPlannerAPI.getCurrentUser();
+                    if (user) {
+                        showOnboardingFlow(user);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error resetting onboarding:', error);
+                    alert('❌ Error resetting onboarding. Please try again or contact support.');
+                }
             }
         }
 
