@@ -3326,7 +3326,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             
             const buttonGrid = options.map(option => `
                 <button 
-                    onclick="toggleQuickSelect(this, '${option}', ${allowMultiple})" 
+                    onclick="toggleQuickSelect(this, ${JSON.stringify(option)}, ${allowMultiple})" 
                     class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left"
                 >
                     ${option}
@@ -4081,15 +4081,26 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
             completeButton.className = 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg';
             completeButton.textContent = '🚀 Start My Personalized Meal Planning!';
             completeButton.onclick = async () => {
+                console.log('🚀 Completion button clicked!');
+                
                 // Replace button with loading message
                 completeButton.disabled = true;
                 completeButton.textContent = '🧠 Generating your personalized meal plan...';
                 
-                // Generate meal suggestions
-                await generateAndSaveMealPlan();
-                
-                // Then complete onboarding
-                completeDetailedOnboarding();
+                try {
+                    // Generate meal suggestions
+                    console.log('📊 Generating meal plan with responses:', userOnboardingData.responses);
+                    await generateAndSaveMealPlan();
+                    
+                    // Then complete onboarding
+                    console.log('✅ Meal plan generated, completing onboarding...');
+                    completeDetailedOnboarding();
+                } catch (error) {
+                    console.error('❌ Error in completion flow:', error);
+                    alert('There was an error completing onboarding. Please try again.');
+                    completeButton.disabled = false;
+                    completeButton.textContent = '🚀 Start My Personalized Meal Planning!';
+                }
             };
             completeDiv.appendChild(completeButton);
             chatContainer.appendChild(completeDiv);
@@ -4099,6 +4110,8 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
         async function generateAndSaveMealPlan() {
             try {
                 const responses = userOnboardingData.responses;
+                console.log('🧠 Starting meal plan generation...');
+                console.log('📝 All responses:', responses);
                 
                 // Extract key preferences
                 const breakfastPref = responses[10]?.answer || 'Traditional breakfast';
@@ -4106,6 +4119,14 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                 const dietaryNeeds = responses[3]?.answer || '';
                 const cookingLevel = responses[2]?.answer || '';
                 const planningStyle = responses[9]?.answer || '';
+                
+                console.log('🍳 Extracted preferences:', {
+                    breakfast: breakfastPref,
+                    cuisine: cuisinePrefs,
+                    dietary: dietaryNeeds,
+                    level: cookingLevel,
+                    planning: planningStyle
+                });
                 
                 // Generate meal suggestions based on their actual preferences
                 const mealSuggestions = generateMealSuggestions({
@@ -4115,6 +4136,8 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                     level: cookingLevel,
                     planning: planningStyle
                 });
+                
+                console.log('🍽️ Generated meal suggestions:', mealSuggestions);
                 
                 // Save suggestions to current meal plan
                 const currentPlan = await window.mealPlannerAPI.getMealPlan();
