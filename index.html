@@ -19,6 +19,11 @@
     // Supabase configuration
     window.VITE_SUPABASE_URL = 'https://vriusyvuqwlozqqcpbke.supabase.co';
     window.VITE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXVzeXZ1cXdsb3pxcWNwYmtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTQwMDEsImV4cCI6MjA2Nzk3MDAwMX0.AoKGvVhxDzAaYOAgSVwt4Jhve9-Ck4o2BiD3iHiV8oE';
+    
+    // Debug Supabase loading
+    console.log('Supabase URL:', window.VITE_SUPABASE_URL);
+    console.log('Supabase Key present:', !!window.VITE_SUPABASE_ANON_KEY);
+    console.log('Supabase global:', !!window.supabase);
     </script>
     
     <!-- Load our API layer and bug reporting system -->

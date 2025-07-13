@@ -14,14 +14,21 @@ class MealPlannerAPI {
         const supabaseUrl = import.meta?.env?.VITE_SUPABASE_URL || window.VITE_SUPABASE_URL;
         const supabaseKey = import.meta?.env?.VITE_SUPABASE_ANON_KEY || window.VITE_SUPABASE_ANON_KEY;
         
+        console.log('🔍 Supabase init debug:');
+        console.log('  URL:', supabaseUrl);
+        console.log('  Key present:', !!supabaseKey);
+        console.log('  window.supabase available:', !!window.supabase);
+        
         if (supabaseUrl && supabaseKey && window.supabase) {
             try {
                 // Use globally loaded Supabase
+                console.log('🚀 Creating Supabase client...');
                 this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
                 this.isSupabaseEnabled = true;
                 
                 // Listen for auth changes
                 this.supabase.auth.onAuthStateChange((event, session) => {
+                    console.log('🔐 Auth state change:', event, session?.user?.email);
                     this.currentUser = session?.user || null;
                     this.onAuthStateChange(event, session);
                 });
@@ -30,13 +37,17 @@ class MealPlannerAPI {
                 const { data: { session } } = await this.supabase.auth.getSession();
                 this.currentUser = session?.user || null;
                 
-                console.log('Supabase initialized successfully');
+                console.log('✅ Supabase initialized successfully');
+                console.log('👤 Current user:', this.currentUser?.email || 'None');
             } catch (error) {
-                console.warn('Supabase initialization failed, falling back to localStorage:', error);
+                console.error('❌ Supabase initialization failed:', error);
                 this.isSupabaseEnabled = false;
             }
         } else {
-            console.log('Supabase not configured, using localStorage');
+            console.log('⚠️ Supabase not configured, using localStorage');
+            if (!supabaseUrl) console.log('  Missing URL');
+            if (!supabaseKey) console.log('  Missing key');
+            if (!window.supabase) console.log('  Supabase library not loaded');
         }
     }
 
