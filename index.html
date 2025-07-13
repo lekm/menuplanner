@@ -2787,18 +2787,18 @@
             
             // Clear chat
             document.getElementById('onboarding-chat').innerHTML = '';
-            updateOnboardingProgress(1, 8);
+            updateOnboardingProgress(1, 11);
             
             const welcomeMessage = `Hi ${userOnboardingData.name}! 👋 
 
-I'm your AI cooking assistant, and I'm here to learn about your unique cooking situation so I can suggest recipes that actually work for your life.
+I'm your AI cooking assistant, and I'm here to learn about your unique life situation so I can suggest meal plans and recipes that actually work for YOU.
 
-Instead of boring multiple choice questions, let's have a real conversation. I'll ask you about your cooking experience, kitchen setup, dietary needs, and lifestyle - just like if we were chatting over coffee.
+Instead of boring multiple choice questions, let's have a real conversation. I'll ask you about your lifestyle, cooking experience, kitchen setup, dietary needs, and any challenges you face - just like if we were chatting over coffee.
 
-**Let's start simple: Tell me about your current relationship with cooking. Are you someone who loves spending time in the kitchen, or do you find cooking more of a chore? What's your experience level like?**`;
+**Let's start with the big picture: Tell me a bit about your age and life stage. Are you a student, working professional, parent, retiree, or something else? What's your current living situation like?**`;
             
             addOnboardingMessage('ai', welcomeMessage);
-            showTextInput("Type your answer here... (e.g., 'I'm pretty new to cooking but want to learn' or 'I love cooking but I'm always short on time')");
+            showTextInput("Type your answer here... (e.g., 'I'm 28, working full-time and living in a small apartment' or 'I'm a college student in shared housing')");
         }
 
         function addOnboardingMessage(sender, message) {
@@ -2905,6 +2905,121 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             }, 100);
         }
 
+        function showQuickSelectWithText(options, placeholder = "Add any additional details...", allowMultiple = false) {
+            const chatContainer = document.getElementById('onboarding-chat');
+            
+            // Remove any existing input
+            const existingInput = document.getElementById('onboarding-input');
+            if (existingInput) {
+                existingInput.remove();
+            }
+            
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'mb-6 text-left max-w-3xl';
+            inputDiv.id = 'onboarding-input';
+            
+            const buttonGrid = options.map(option => `
+                <button 
+                    onclick="toggleQuickSelect(this, '${option}', ${allowMultiple})" 
+                    class="quick-select-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 hover:border-blue-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition-all duration-200 text-left"
+                >
+                    ${option}
+                </button>
+            `).join('');
+            
+            inputDiv.innerHTML = `
+                <div class="bg-white border-2 border-blue-200 rounded-xl p-4 shadow-sm">
+                    <div class="mb-4">
+                        <div class="text-sm text-gray-600 mb-3">${allowMultiple ? 'Select all that apply:' : 'Quick select (or type your own below):'}</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+                            ${buttonGrid}
+                        </div>
+                    </div>
+                    <textarea 
+                        id="user-response-input" 
+                        placeholder="${placeholder}"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        rows="2"
+                        style="min-height: 60px;"
+                    ></textarea>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-sm text-gray-500">Choose options above and/or add details below</span>
+                        <button onclick="submitQuickSelectResponse()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                            Continue →
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            chatContainer.appendChild(inputDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function toggleQuickSelect(button, value, allowMultiple) {
+            if (allowMultiple) {
+                // Multi-select mode
+                button.classList.toggle('selected');
+                if (button.classList.contains('selected')) {
+                    button.classList.remove('bg-gray-100', 'text-gray-700');
+                    button.classList.add('bg-blue-500', 'text-white', 'border-blue-500');
+                } else {
+                    button.classList.remove('bg-blue-500', 'text-white', 'border-blue-500');
+                    button.classList.add('bg-gray-100', 'text-gray-700');
+                }
+            } else {
+                // Single-select mode - deselect others
+                const allButtons = document.querySelectorAll('.quick-select-btn');
+                allButtons.forEach(btn => {
+                    btn.classList.remove('selected', 'bg-blue-500', 'text-white', 'border-blue-500');
+                    btn.classList.add('bg-gray-100', 'text-gray-700');
+                });
+                
+                // Select this one
+                button.classList.add('selected', 'bg-blue-500', 'text-white', 'border-blue-500');
+                button.classList.remove('bg-gray-100', 'text-gray-700');
+            }
+        }
+
+        function submitQuickSelectResponse() {
+            const selectedButtons = document.querySelectorAll('.quick-select-btn.selected');
+            const selectedValues = Array.from(selectedButtons).map(btn => btn.textContent.trim());
+            const textInput = document.getElementById('user-response-input').value.trim();
+            
+            let response = '';
+            if (selectedValues.length > 0) {
+                response = selectedValues.join(', ');
+            }
+            if (textInput) {
+                response += (response ? '. ' : '') + textInput;
+            }
+            
+            if (!response) {
+                alert('Please select an option or type a response to continue.');
+                return;
+            }
+            
+            // Add user's response to chat
+            addOnboardingMessage('user', response);
+            
+            // Store the response
+            userOnboardingData.responses.push({
+                step: onboardingStep,
+                question: getCurrentQuestion(),
+                answer: response,
+                selected_options: selectedValues,
+                additional_text: textInput
+            });
+            
+            // Remove input
+            const inputDiv = document.getElementById('onboarding-input');
+            if (inputDiv) {
+                inputDiv.remove();
+            }
+            
+            // Process the response with AI
+            processConversationalResponse(response);
+        }
+
         async function submitUserResponse() {
             const textarea = document.getElementById('user-response-input');
             const response = textarea.value.trim();
@@ -2936,6 +3051,8 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
 
         function getCurrentQuestion() {
             const questions = [
+                "age and living situation",
+                "accessibility and lifestyle considerations",
                 "cooking relationship and experience",
                 "dietary restrictions and preferences", 
                 "kitchen equipment and tools",
@@ -2943,7 +3060,8 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                 "cooking goals and challenges",
                 "knife skills and techniques",
                 "favorite cuisines and flavors",
-                "meal planning style"
+                "meal planning style",
+                "final preferences"
             ];
             return questions[onboardingStep] || "general question";
         }
@@ -2964,7 +3082,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
 
         async function processConversationalResponse(userResponse) {
             onboardingStep++;
-            updateOnboardingProgress(onboardingStep + 1, 8);
+            updateOnboardingProgress(onboardingStep + 1, 11);
             
             // Show typing indicator
             showTypingIndicator();
@@ -2973,42 +3091,139 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             let nextPlaceholder = "";
             
             switch(onboardingStep) {
-                case 1: // After cooking experience response
+                case 1: // After age/living situation response
+                    nextQuestion = await generateAccessibilityQuestion(userResponse);
+                    // Show quick-select for accessibility needs
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'ADHD or executive function challenges',
+                            'Depression or anxiety',
+                            'Chronic fatigue or low energy',
+                            'Physical disabilities or mobility issues',
+                            'Sensory sensitivities (textures, sounds, smells)',
+                            'Chronic illness or pain',
+                            'Autism or other neurodivergence',
+                            'None of the above'
+                        ], "Add any other details about challenges that affect cooking...", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
+                    
+                case 2: // After accessibility response
+                    nextQuestion = await generateCookingQuestion(userResponse);
+                    nextPlaceholder = "Tell me about your relationship with cooking - love it, hate it, somewhere in between?";
+                    break;
+                    
+                case 3: // After cooking experience response
                     nextQuestion = await generateDietaryQuestion(userResponse);
-                    nextPlaceholder = "Tell me about any dietary needs, allergies, or food preferences you have...";
-                    break;
+                    // Show quick-select for dietary needs
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'Vegetarian',
+                            'Vegan',
+                            'Gluten-free',
+                            'Dairy-free/Lactose intolerant',
+                            'Nut allergies',
+                            'Low-carb/Keto',
+                            'Low-sodium',
+                            'Diabetic considerations',
+                            'Kosher or Halal',
+                            'No specific restrictions'
+                        ], "Tell me about any other dietary needs, allergies, or preferences...", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
                     
-                case 2: // After dietary response  
+                case 4: // After dietary response  
                     nextQuestion = await generateEquipmentQuestion(userResponse);
-                    nextPlaceholder = "List your kitchen tools, appliances, cookware - be specific! (e.g., 'I have a decent chef's knife, cast iron pan, Instant Pot, basic blender...')";
-                    break;
+                    // Show quick-select for common kitchen equipment
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'Basic knives (chef\'s knife, paring knife)',
+                            'Good quality knife set',
+                            'Non-stick pans',
+                            'Cast iron cookware',
+                            'Instant Pot or pressure cooker',
+                            'Slow cooker/Crock pot',
+                            'Blender',
+                            'Food processor',
+                            'Stand mixer (KitchenAid style)',
+                            'Air fryer',
+                            'Rice cooker',
+                            'Sheet pans and baking dishes',
+                            'Very basic equipment only'
+                        ], "List any other specific tools, appliances, or cookware you have...", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
                     
-                case 3: // After equipment response
+                case 5: // After equipment response
                     nextQuestion = await generateScheduleQuestion(userResponse);
-                    nextPlaceholder = "Describe your typical week - work schedule, busy periods, when you have time to cook...";
-                    break;
+                    // Show quick-select for schedule types
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'Regular 9-5 schedule',
+                            'Shift work or irregular hours',
+                            'Very busy/high-stress job',
+                            'Student schedule',
+                            'Parent with young children',
+                            'Work from home',
+                            'Retired or flexible schedule',
+                            'Weekends are my main cooking time',
+                            'Evenings are my main cooking time',
+                            'I prefer to cook in large batches'
+                        ], "Describe your typical week, busy periods, and when you have energy to cook...", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
                     
-                case 4: // After schedule response
+                case 6: // After schedule response
                     nextQuestion = await generateGoalsQuestion(userResponse);
                     nextPlaceholder = "What are you hoping to achieve with meal planning? What challenges do you face?";
                     break;
                     
-                case 5: // After goals response
+                case 7: // After goals response
                     nextQuestion = await generateSkillsQuestion(userResponse);
                     nextPlaceholder = "How comfortable are you with knife work, different cooking techniques, following recipes?";
                     break;
                     
-                case 6: // After skills response
+                case 8: // After skills response
                     nextQuestion = await generateCuisineQuestion(userResponse);
-                    nextPlaceholder = "What flavors, cuisines, or types of food do you gravitate toward?";
-                    break;
+                    // Show quick-select for cuisine preferences
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        addOnboardingMessage('ai', nextQuestion);
+                        showQuickSelectWithText([
+                            'Italian (pasta, pizza, Mediterranean)',
+                            'Asian (Chinese, Thai, Japanese, Korean)',
+                            'Mexican/Latin American',
+                            'Indian and spicy foods',
+                            'Comfort foods (mac and cheese, casseroles)',
+                            'Fresh and healthy (salads, grain bowls)',
+                            'BBQ and grilled foods',
+                            'Soups and stews',
+                            'Breakfast foods anytime',
+                            'Simple American classics',
+                            'I\'m open to trying anything'
+                        ], "What other flavors, cuisines, or types of food do you enjoy?", true);
+                    }, 1500 + Math.random() * 1000);
+                    return;
                     
-                case 7: // After cuisine response
-                    nextQuestion = await generateFinalQuestion(userResponse);
+                case 9: // After cuisine response
+                    nextQuestion = await generatePlanningQuestion(userResponse);
                     nextPlaceholder = "How do you prefer to approach meal planning and prep?";
                     break;
                     
-                case 8: // Final response - complete onboarding
+                case 10: // After planning response
+                    nextQuestion = await generateFinalQuestion(userResponse);
+                    nextPlaceholder = "Any final thoughts, specific needs, or things I should know to help you succeed?";
+                    break;
+                    
+                case 11: // Final response - complete onboarding
                     hideTypingIndicator();
                     await completeConversationalOnboarding();
                     return;
@@ -3095,6 +3310,105 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
         }
 
         // Intelligent question generation based on user responses
+        
+        async function generateAccessibilityQuestion(ageResponse) {
+            const response = ageResponse.toLowerCase();
+            
+            if (response.includes('student') || response.includes('college') || response.includes('university')) {
+                return `Thanks for sharing! Student life can be challenging for meal planning - tight budgets, shared kitchens, irregular schedules. 🎓
+
+**Now for something important:** I want to make sure the meal plans I suggest actually work for your brain and body. 
+
+Do you have anything that affects how you approach cooking or meal planning? This could be **ADHD** (trouble with executive function), **depression or anxiety** (affects motivation/energy), **physical limitations** (mobility, chronic pain, fatigue), **sensory issues** (textures, sounds, smells), or anything else I should know about?
+
+There's no judgment here - I just want to suggest strategies that work WITH your brain and situation, not against them.`;
+            } else if (response.includes('working') || response.includes('professional') || response.includes('job')) {
+                return `Got it! Working full-time definitely impacts how much time and energy you have for cooking. ⚡
+
+**Here's something important I need to know:** Do you have any conditions or challenges that affect how you approach cooking and meal planning? 
+
+This could include things like **ADHD** (executive function challenges), **chronic fatigue**, **depression/anxiety** (affecting motivation), **physical limitations**, **sensory sensitivities**, or anything else that influences your relationship with food prep.
+
+I'm asking because different brains work differently, and I want to suggest meal planning strategies that actually fit YOUR situation.`;
+            } else if (response.includes('parent') || response.includes('kids') || response.includes('family')) {
+                return `Parenting adds a whole extra layer to meal planning! 👨‍👩‍👧‍👦
+
+**I want to ask about something important:** Beyond the usual parenting challenges, do you have any personal factors that affect your cooking and meal planning? 
+
+Things like **ADHD** (executive function challenges), **postpartum depression/anxiety**, **chronic fatigue**, **physical limitations**, **sensory processing issues**, or anything else that impacts how you approach food and cooking?
+
+Understanding this helps me suggest realistic strategies that work for your actual life, not just theoretical meal plans.`;
+            } else {
+                return `Thanks for sharing your life situation! 
+
+**Now for something really important:** I believe meal planning should work for ALL brains and bodies, not just neurotypical, able-bodied people.
+
+Do you have any conditions, challenges, or considerations that affect how you approach cooking and meal planning? This could include:
+
+• **Neurodivergence** (ADHD, autism, executive function challenges)
+• **Mental health** (depression, anxiety affecting motivation/energy)  
+• **Physical factors** (chronic pain, fatigue, mobility limitations)
+• **Sensory issues** (textures, sounds, smells in cooking)
+• **Chronic illness** or other health considerations
+
+Or maybe nothing specific comes to mind - that's totally fine too! I just want to make sure my suggestions actually work for YOU.`;
+            }
+        }
+
+        async function generateCookingQuestion(accessibilityResponse) {
+            const response = accessibilityResponse.toLowerCase();
+            
+            if (response.includes('adhd') || response.includes('executive')) {
+                return `Thank you for sharing that! ADHD can definitely impact cooking - from remembering steps to managing time to dealing with sensory aspects. I'll keep that in mind for suggestions. 🧠
+
+**Now let's talk about cooking itself:** How do you currently feel about cooking? 
+
+Are you someone who finds it overwhelming (too many steps, sensory overload), or do you actually enjoy it when you can focus? Do you prefer really simple recipes, or do you like having something engaging to hyperfocus on?
+
+Understanding your relationship with cooking will help me suggest recipes and strategies that work WITH your ADHD brain.`;
+            } else if (response.includes('depression') || response.includes('anxiety') || response.includes('mental')) {
+                return `I appreciate you sharing that. Mental health definitely affects our relationship with food and cooking - some days you have energy, others you don't, and that's completely normal. 💙
+
+**Let's talk about cooking:** On your good days, how do you feel about cooking? Do you enjoy it, find it therapeutic, or is it still a chore?
+
+And on harder days, what feels manageable? Are you someone who can handle very simple assembly, or do you prefer having easy backup options ready to go?
+
+I want to suggest meal strategies that work for both your good days AND your challenging ones.`;
+            } else if (response.includes('chronic') || response.includes('fatigue') || response.includes('pain') || response.includes('mobility')) {
+                return `Thank you for trusting me with that information. Chronic conditions add real constraints to cooking, and I want to make sure my suggestions respect your energy and physical limits. 🌟
+
+**About cooking:** How does your condition typically affect your ability to cook? 
+
+Do you have good days and bad days? Are there specific tasks that are harder (standing for long periods, heavy lifting, repetitive motions)? Do you prefer to batch cook when you're feeling good, or do you need consistently simple options?
+
+Understanding your patterns will help me suggest realistic meal planning that conserves your energy for what matters most.`;
+            } else if (response.includes('sensory') || response.includes('autism') || response.includes('sensitive')) {
+                return `Thanks for sharing! Sensory considerations are so important in cooking - textures, smells, sounds can all impact the experience. 🌈
+
+**Let's talk about cooking:** Are there specific sensory aspects of cooking that work well for you or that you find challenging?
+
+For example, do you enjoy the process of chopping and preparing ingredients, or do certain textures/smells make it difficult? Are there cooking methods you prefer (like baking vs. stovetop) or ingredients that are particularly appealing or off-putting?
+
+I want to suggest recipes and techniques that feel good to make, not just good to eat.`;
+            } else if (response.includes('none') || response.includes('nothing') || response.includes('not really')) {
+                return `Perfect! Thanks for letting me know. 😊
+
+**Now let's dive into cooking:** What's your current relationship with cooking like? 
+
+Are you someone who genuinely enjoys spending time in the kitchen, or do you see it more as a necessary chore? Are you confident with basics, or still building skills? Do you like following detailed recipes, or prefer to wing it?
+
+There's no right answer here - I just want to understand where you're starting from so I can suggest recipes and approaches that match your comfort level and interests.`;
+            } else {
+                return `Thank you for sharing that with me. I'll definitely keep those considerations in mind when suggesting recipes and meal planning strategies. 💪
+
+**Now let's talk about cooking itself:** What's your current relationship with cooking?
+
+Do you enjoy it despite any challenges, or do you find it stressful? Are there aspects of cooking that work particularly well for you, or specific things that make it harder?
+
+Understanding both your challenges AND what you enjoy about cooking will help me suggest approaches that feel sustainable and enjoyable.`;
+            }
+        }
+        
         async function generateDietaryQuestion(cookingResponse) {
             const response = cookingResponse.toLowerCase();
             
@@ -3225,12 +3539,22 @@ Let's talk **flavors and cuisines**. This is where cooking gets fun! I don't wan
 **What flavors, cuisines, or types of food do you find yourself craving or ordering?** Are you drawn to spicy foods, comfort foods, fresh and light dishes, rich and hearty meals? Any particular cuisines that speak to you - or ones you're curious to try?`;
         }
 
-        async function generateFinalQuestion(cuisineResponse) {
+        async function generatePlanningQuestion(cuisineResponse) {
             return `Excellent! Those flavor preferences give me a great direction for recipe suggestions. Food should be delicious, not just functional! 😋
 
-**Final question:** How do you want to approach the actual meal planning and prep? I'm not talking about your cooking skills - I mean your strategy for organizing meals throughout the week.
+**Now let's talk strategy:** How do you want to approach the actual meal planning and prep? I'm not talking about your cooking skills - I mean your strategy for organizing meals throughout the week.
 
 Do you prefer to batch cook on weekends, cook fresh each day, prep ingredients in advance and assemble later, or some combination? What's worked for you before, and what definitely hasn't worked?`;
+        }
+
+        async function generateFinalQuestion(planningResponse) {
+            return `Perfect! I think I have a really solid understanding of your situation now. 🎯
+
+**One last thing:** Is there anything else I should know to help you succeed with meal planning? 
+
+Maybe specific challenges you face that we haven't covered, foods you absolutely hate, cooking disasters you want to avoid, family members with picky eating habits, budget constraints, or just any other thoughts about what would make meal planning actually work for your life?
+
+This is your chance to add anything that feels important - or just say you're all set if we've covered everything!`;
         }
 
         async function completeConversationalOnboarding() {
@@ -3241,21 +3565,27 @@ Do you prefer to batch cook on weekends, cook fresh each day, prep ingredients i
 
 Here's what I learned about you:
 
-**Cooking Background:** ${responses[0]?.answer || 'Not specified'}
+**Age & Living Situation:** ${responses[0]?.answer || 'Not specified'}
 
-**Dietary Needs:** ${responses[1]?.answer || 'Not specified'}
+**Accessibility Considerations:** ${responses[1]?.answer || 'Not specified'}
 
-**Kitchen Setup:** ${responses[2]?.answer || 'Not specified'}
+**Cooking Background:** ${responses[2]?.answer || 'Not specified'}
 
-**Schedule & Energy:** ${responses[3]?.answer || 'Not specified'}
+**Dietary Needs:** ${responses[3]?.answer || 'Not specified'}
 
-**Goals & Challenges:** ${responses[4]?.answer || 'Not specified'}
+**Kitchen Setup:** ${responses[4]?.answer || 'Not specified'}
 
-**Skills & Comfort Level:** ${responses[5]?.answer || 'Not specified'}
+**Schedule & Energy:** ${responses[5]?.answer || 'Not specified'}
 
-**Flavor Preferences:** ${responses[6]?.answer || 'Not specified'}
+**Goals & Challenges:** ${responses[6]?.answer || 'Not specified'}
 
-**Planning Style:** ${responses[7]?.answer || 'Not specified'}
+**Skills & Comfort Level:** ${responses[7]?.answer || 'Not specified'}
+
+**Flavor Preferences:** ${responses[8]?.answer || 'Not specified'}
+
+**Planning Style:** ${responses[9]?.answer || 'Not specified'}
+
+**Additional Notes:** ${responses[10]?.answer || 'Not specified'}
 
 This detailed profile means I can suggest recipes that actually fit YOUR life - not generic meal plans that ignore your equipment, schedule, and preferences. Ready to start cooking?`;
             
@@ -3294,18 +3624,21 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                 const profileData = {
                     display_name: userOnboardingData.name,
                     onboarding_type: 'conversational',
-                    cooking_background: responses[0]?.answer || '',
-                    dietary_needs: responses[1]?.answer || '',
-                    kitchen_equipment: responses[2]?.answer || '',
-                    schedule_energy: responses[3]?.answer || '',
-                    goals_challenges: responses[4]?.answer || '',
-                    skills_comfort: responses[5]?.answer || '',
-                    flavor_preferences: responses[6]?.answer || '',
-                    planning_style: responses[7]?.answer || '',
+                    age_range: responses[0]?.answer || '',
+                    living_situation: responses[0]?.answer || '', // Same as age_range for now
+                    accessibility_needs: responses[1]?.answer || '',
+                    cooking_background: responses[2]?.answer || '',
+                    dietary_needs: responses[3]?.answer || '',
+                    kitchen_equipment: responses[4]?.answer || '',
+                    schedule_energy: responses[5]?.answer || '',
+                    goals_challenges: responses[6]?.answer || '',
+                    skills_comfort: responses[7]?.answer || '',
+                    flavor_preferences: responses[8]?.answer || '',
+                    planning_style: responses[9]?.answer || '',
                     full_conversation: responses,
                     onboarding_completed: true,
                     onboarding_date: new Date().toISOString(),
-                    profile_version: '4.0' // Conversational version
+                    profile_version: '5.0' // Enhanced inclusive version
                 };
 
                 console.log('💾 Profile data to save:', profileData);
@@ -3358,18 +3691,21 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                     const profileData = {
                         display_name: userOnboardingData.name,
                         onboarding_type: 'conversational',
-                        cooking_background: responses[0]?.answer || '',
-                        dietary_needs: responses[1]?.answer || '',
-                        kitchen_equipment: responses[2]?.answer || '',
-                        schedule_energy: responses[3]?.answer || '',
-                        goals_challenges: responses[4]?.answer || '',
-                        skills_comfort: responses[5]?.answer || '',
-                        flavor_preferences: responses[6]?.answer || '',
-                        planning_style: responses[7]?.answer || '',
+                        age_range: responses[0]?.answer || '',
+                        living_situation: responses[0]?.answer || '', // Same as age_range for now
+                        accessibility_needs: responses[1]?.answer || '',
+                        cooking_background: responses[2]?.answer || '',
+                        dietary_needs: responses[3]?.answer || '',
+                        kitchen_equipment: responses[4]?.answer || '',
+                        schedule_energy: responses[5]?.answer || '',
+                        goals_challenges: responses[6]?.answer || '',
+                        skills_comfort: responses[7]?.answer || '',
+                        flavor_preferences: responses[8]?.answer || '',
+                        planning_style: responses[9]?.answer || '',
                         full_conversation: responses,
                         onboarding_completed: true,
                         onboarding_date: new Date().toISOString(),
-                        profile_version: '4.0'
+                        profile_version: '5.0' // Enhanced inclusive version
                     };
                     
                     localStorage.setItem('userProfile', JSON.stringify(profileData));

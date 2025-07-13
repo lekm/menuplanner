@@ -55,6 +55,13 @@ CREATE TABLE public.user_profiles (
   
   -- New conversational onboarding fields
   onboarding_type TEXT DEFAULT 'structured', -- 'structured' or 'conversational'
+  
+  -- Core lifestyle factors
+  age_range TEXT, -- Free-form response about age/life stage
+  living_situation TEXT, -- Free-form response about living arrangement
+  accessibility_needs TEXT, -- Free-form response about neurodivergence, disabilities, health considerations
+  
+  -- Cooking context
   cooking_background TEXT, -- Free-form response about cooking experience
   dietary_needs TEXT, -- Free-form response about dietary needs
   kitchen_equipment TEXT, -- Free-form response about equipment
@@ -63,6 +70,7 @@ CREATE TABLE public.user_profiles (
   skills_comfort TEXT, -- Free-form response about skills
   flavor_preferences TEXT, -- Free-form response about flavors
   planning_style TEXT, -- Free-form response about planning
+  
   full_conversation JSONB DEFAULT '{}', -- Complete conversation history
   
   -- Meta fields
