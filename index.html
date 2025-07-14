@@ -3040,7 +3040,9 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     display_name: 'Test User (with meal suggestions)',
                     cooking_equipment: ['Basic kitchen setup'],
                     dietary_restrictions: [],
-                    energy_preferences: { default: 'medium' }
+                    energy_preferences: { default: 'medium' },
+                    onboarding_completed: true,
+                    onboarding_date: new Date().toISOString()
                 };
                 
                 try {
@@ -3052,15 +3054,9 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     const result = await window.mealPlannerAPI.updateUserProfile(testProfileData);
                     console.log('✅ Test profile saved successfully:', result);
                     
-                    // Set completion flag in database
+                    // Set completion flag in session
                     onboardingCompleted = true;
                     sessionStorage.setItem('onboardingCompleted', 'true');
-                    
-                    // Update profile with onboarding completion
-                    await window.mealPlannerAPI.updateUserProfile({
-                        onboarding_completed: true,
-                        onboarding_date: new Date().toISOString()
-                    });
                     
                     // Generate test meal plan
                     const testMealPlan = generateMealSuggestions({
