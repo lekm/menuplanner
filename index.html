@@ -3035,14 +3035,26 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             if (confirm('Use test data to quickly complete onboarding? This will skip the conversation and set up a sample profile.')) {
                 const user = window.mealPlannerAPI.getCurrentUser();
                 
-                // Using only fields that exist in current database schema
+                // Using fields that exist in current database schema + conversational onboarding fields
                 const testProfileData = {
                     display_name: 'Test User (with meal suggestions)',
                     cooking_equipment: ['Basic kitchen setup'],
                     dietary_restrictions: [],
                     energy_preferences: { default: 'medium' },
                     onboarding_completed: true,
-                    onboarding_date: new Date().toISOString()
+                    onboarding_date: new Date().toISOString(),
+                    // Conversational onboarding fields
+                    living_situation: 'Mid-30s, single professional living in apartment',
+                    accessibility_needs: 'ADHD - needs simple, quick meal options',
+                    cooking_background: 'Beginner level, comfortable with basics like pasta and stir-fry',
+                    dietary_needs: 'No major restrictions, trying to eat healthier and reduce takeout',
+                    kitchen_equipment: 'Basic setup: stovetop, oven, microwave, blender, slow cooker',
+                    schedule_energy: 'Irregular work schedule, medium energy most days, tired on weekends',
+                    goals_challenges: 'Want to meal prep on weekends, avoid takeout during busy weeks',
+                    skills_comfort: 'Comfortable with one-pot meals, want to learn more techniques',
+                    flavor_preferences: 'Love Italian, Asian, and comfort foods. Not too spicy.',
+                    planning_style: 'Prefer batch cooking on weekends, simple weekday meals',
+                    breakfast_preferences: 'Light breakfast - toast, cereal, yogurt, or smoothies'
                 };
                 
                 try {
