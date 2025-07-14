@@ -2932,15 +2932,16 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             if (confirm('Use test data to quickly complete onboarding? This will skip the conversation and set up a sample profile.')) {
                 const user = window.mealPlannerAPI.getCurrentUser();
                 
-                // Try the most minimal profile first to test database compatibility
+                // Using minimal profile that works + onboarding completion
                 const testProfileData = {
-                    display_name: 'Test User'
+                    display_name: 'Test User',
+                    onboarding_completed: true
                 };
                 
                 try {
                     // First check what's currently in the database
                     const currentProfile = await window.mealPlannerAPI.getUserProfile();
-                    console.log('📊 Current profile in database:', currentProfile);
+                    console.log('📊 Current profile in database:', JSON.stringify(currentProfile, null, 2));
                     
                     console.log('💾 Attempting to save test profile:', testProfileData);
                     const result = await window.mealPlannerAPI.updateUserProfile(testProfileData);
@@ -3338,6 +3339,8 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
 
         function toggleQuickSelect(button, value, allowMultiple) {
             console.log('🔘 Button clicked:', value, 'allowMultiple:', allowMultiple);
+            console.log('🔘 Button element:', button);
+            console.log('🔘 Button classes before:', Array.from(button.classList));
             if (allowMultiple) {
                 // Multi-select mode
                 button.classList.toggle('selected');
@@ -3360,6 +3363,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                 button.classList.add('selected', 'bg-blue-500', 'text-white', 'border-blue-500');
                 button.classList.remove('bg-gray-100', 'text-gray-700');
             }
+            console.log('🔘 Button classes after:', Array.from(button.classList));
         }
 
         function submitQuickSelectResponse() {
@@ -4116,7 +4120,9 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                 console.log('🍽️ Generated meal suggestions:', mealSuggestions);
                 
                 // Save suggestions to current meal plan
+                console.log('📅 Getting current meal plan...');
                 const currentPlan = await window.mealPlannerAPI.getMealPlan();
+                console.log('📅 Current meal plan:', currentPlan);
                 const enhancedPlan = { ...currentPlan };
                 
                 // Populate Monday as an example
@@ -4131,7 +4137,9 @@ This detailed profile means I can suggest recipes that actually fit YOUR life - 
                 enhancedPlan['tuesday']['lunch'] = mealSuggestions.lunch[1] || mealSuggestions.lunch[0] || '';
                 enhancedPlan['tuesday']['dinner'] = mealSuggestions.dinner[1] || mealSuggestions.dinner[0] || '';
                 
+                console.log('💾 Saving enhanced meal plan:', enhancedPlan);
                 await window.mealPlannerAPI.saveMealPlan(enhancedPlan);
+                console.log('✅ Meal plan saved successfully');
                 
                 // Generate and apply schedule labels
                 const scheduleLabels = generateScheduleLabels(responses);
