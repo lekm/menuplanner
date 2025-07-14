@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Meal Planner - Auth Enabled (v2.2)</title>
+    <title>Weekly Meal Planner - Auth Enabled (v2.3)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Load Supabase from CDN -->
@@ -3135,10 +3135,15 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     updateAuthUI(user);
                     
                     // Hide onboarding modal and show success
+                    console.log('🎉 Hiding onboarding modal...');
                     document.getElementById('onboarding-modal').classList.add('hidden');
+                    
+                    console.log('🎉 Showing completion message...');
                     showOnboardingComplete();
                     
+                    console.log('🎉 Setting timeout to show planner...');
                     setTimeout(() => {
+                        console.log('🎉 Timeout reached - hiding auth gate and showing planner');
                         hideAuthGate();
                         switchTab('planner');
                     }, 2000);
