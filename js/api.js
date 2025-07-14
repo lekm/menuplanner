@@ -277,14 +277,15 @@ class MealPlannerAPI {
             .eq('user_id', this.currentUser.id)
             .eq('week_start', weekStart)
             .eq('is_template', false)
-            .maybeSingle();
+            .order('created_at', { ascending: false })
+            .limit(1);
             
         if (error) {
             console.error('Error fetching meal plan:', error);
             throw error;
         }
         
-        return data?.meals || {};
+        return data?.[0]?.meals || {};
     }
 
     async saveMealPlan(meals, weekStart = null) {
