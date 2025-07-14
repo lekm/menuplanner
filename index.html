@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Meal Planner - Auth Enabled</title>
+    <title>Weekly Meal Planner - Auth Enabled (v2.1)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Load Supabase from CDN -->
@@ -30,7 +30,7 @@
     </script>
     
     <!-- Load our API layer and bug reporting system -->
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=2"></script>
     <script src="js/bug-report.js"></script>
     <style>
     @keyframes pulse {
@@ -916,6 +916,78 @@
                                 <input type="checkbox" value="Low-Carb" class="dietary-checkbox mr-2">
                                 <span class="text-sm">Low-Carb</span>
                             </label>
+                        </div>
+                    </div>
+
+                    <!-- Onboarding Information Section -->
+                    <div id="onboarding-section" class="mb-6">
+                        <h5 class="text-lg font-medium text-gray-800 mb-3">🍽️ Your Cooking Profile</h5>
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                            <div id="onboarding-display" class="space-y-3">
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">🏠 Living Situation</h6>
+                                        <p id="profile-living-situation" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">♿ Accessibility Needs</h6>
+                                        <p id="profile-accessibility-needs" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">👨‍🍳 Cooking Background</h6>
+                                        <p id="profile-cooking-background" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">🥗 Dietary Needs</h6>
+                                        <p id="profile-dietary-needs" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">🔧 Kitchen Equipment</h6>
+                                        <p id="profile-kitchen-equipment" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">⚡ Schedule & Energy</h6>
+                                        <p id="profile-schedule-energy" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">🎯 Goals & Challenges</h6>
+                                        <p id="profile-goals-challenges" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">🥘 Flavor Preferences</h6>
+                                        <p id="profile-flavor-preferences" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">📋 Planning Style</h6>
+                                        <p id="profile-planning-style" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                    <div>
+                                        <h6 class="font-medium text-gray-700 mb-1">🍳 Breakfast Preferences</h6>
+                                        <p id="profile-breakfast-preferences" class="text-sm text-gray-600">Not specified</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-3 border-t border-blue-200">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-700">
+                                            Onboarding: <span id="profile-onboarding-status" class="text-green-600">Completed</span>
+                                        </p>
+                                        <p id="profile-onboarding-date" class="text-xs text-gray-500">Date not available</p>
+                                    </div>
+                                    <button type="button" onclick="resetOnboarding()" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">
+                                        Retake Onboarding
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1887,6 +1959,37 @@
                     }
                 }
                 
+                // Populate onboarding information
+                document.getElementById('profile-living-situation').textContent = profile.living_situation || 'Not specified';
+                document.getElementById('profile-accessibility-needs').textContent = profile.accessibility_needs || 'Not specified';
+                document.getElementById('profile-cooking-background').textContent = profile.cooking_background || 'Not specified';
+                document.getElementById('profile-dietary-needs').textContent = profile.dietary_needs || 'Not specified';
+                document.getElementById('profile-kitchen-equipment').textContent = profile.kitchen_equipment || 'Not specified';
+                document.getElementById('profile-schedule-energy').textContent = profile.schedule_energy || 'Not specified';
+                document.getElementById('profile-goals-challenges').textContent = profile.goals_challenges || 'Not specified';
+                document.getElementById('profile-flavor-preferences').textContent = profile.flavor_preferences || 'Not specified';
+                document.getElementById('profile-planning-style').textContent = profile.planning_style || 'Not specified';
+                document.getElementById('profile-breakfast-preferences').textContent = profile.breakfast_preferences || 'Not specified';
+                
+                // Onboarding status
+                const onboardingStatus = document.getElementById('profile-onboarding-status');
+                const onboardingDate = document.getElementById('profile-onboarding-date');
+                
+                if (profile.onboarding_completed) {
+                    onboardingStatus.textContent = 'Completed';
+                    onboardingStatus.className = 'text-green-600';
+                    if (profile.onboarding_date) {
+                        const date = new Date(profile.onboarding_date);
+                        onboardingDate.textContent = `Completed on ${date.toLocaleDateString()}`;
+                    } else {
+                        onboardingDate.textContent = 'Completion date not available';
+                    }
+                } else {
+                    onboardingStatus.textContent = 'Not completed';
+                    onboardingStatus.className = 'text-red-600';
+                    onboardingDate.textContent = 'Complete onboarding to personalize your experience';
+                }
+                
             } catch (error) {
                 console.error('Error loading profile:', error);
             }
@@ -2812,9 +2915,9 @@
                 const profile = await window.mealPlannerAPI.getUserProfile();
                 console.log('📊 User profile:', profile);
                 
-                // Check if user needs onboarding (no profile or incomplete profile)
+                // Check if user needs onboarding using the database field
                 if (!profile || !profile.onboarding_completed) {
-                    console.log('❌ Onboarding needed - profile missing or incomplete');
+                    console.log('❌ Onboarding needed - profile missing or onboarding not completed');
                     showOnboardingFlow(user);
                 } else {
                     console.log('✅ Onboarding complete - showing app');
@@ -2932,10 +3035,12 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             if (confirm('Use test data to quickly complete onboarding? This will skip the conversation and set up a sample profile.')) {
                 const user = window.mealPlannerAPI.getCurrentUser();
                 
-                // Using minimal profile that works + onboarding completion
+                // Using only fields that exist in current database schema
                 const testProfileData = {
-                    display_name: 'Test User',
-                    onboarding_completed: true
+                    display_name: 'Test User (with meal suggestions)',
+                    cooking_equipment: ['Basic kitchen setup'],
+                    dietary_restrictions: [],
+                    energy_preferences: { default: 'medium' }
                 };
                 
                 try {
@@ -2947,9 +3052,15 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     const result = await window.mealPlannerAPI.updateUserProfile(testProfileData);
                     console.log('✅ Test profile saved successfully:', result);
                     
-                    // Set completion flag and persist it
+                    // Set completion flag in database
                     onboardingCompleted = true;
                     sessionStorage.setItem('onboardingCompleted', 'true');
+                    
+                    // Update profile with onboarding completion
+                    await window.mealPlannerAPI.updateUserProfile({
+                        onboarding_completed: true,
+                        onboarding_date: new Date().toISOString()
+                    });
                     
                     // Generate test meal plan
                     const testMealPlan = generateMealSuggestions({

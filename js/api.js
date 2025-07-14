@@ -277,9 +277,10 @@ class MealPlannerAPI {
             .eq('user_id', this.currentUser.id)
             .eq('week_start', weekStart)
             .eq('is_template', false)
-            .single();
+            .maybeSingle();
             
-        if (error && error.code !== 'PGRST116') { // Not found is ok
+        if (error) {
+            console.error('Error fetching meal plan:', error);
             throw error;
         }
         
