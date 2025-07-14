@@ -2932,16 +2932,19 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
             if (confirm('Use test data to quickly complete onboarding? This will skip the conversation and set up a sample profile.')) {
                 const user = window.mealPlannerAPI.getCurrentUser();
                 
-                // Sample test data profile (using only core fields to avoid 400 errors)
+                // Try the most minimal profile first to test database compatibility
                 const testProfileData = {
-                    display_name: 'Test User',
-                    onboarding_completed: true,
-                    onboarding_date: new Date().toISOString()
+                    display_name: 'Test User'
                 };
                 
                 try {
-                    await window.mealPlannerAPI.updateUserProfile(testProfileData);
-                    console.log('✅ Test profile saved successfully');
+                    // First check what's currently in the database
+                    const currentProfile = await window.mealPlannerAPI.getUserProfile();
+                    console.log('📊 Current profile in database:', currentProfile);
+                    
+                    console.log('💾 Attempting to save test profile:', testProfileData);
+                    const result = await window.mealPlannerAPI.updateUserProfile(testProfileData);
+                    console.log('✅ Test profile saved successfully:', result);
                     
                     // Set completion flag and persist it
                     onboardingCompleted = true;
@@ -2989,6 +2992,7 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     
                 } catch (error) {
                     console.error('❌ Error saving test profile:', error);
+                    console.error('Error details:', error.message, error.details, error.hint);
                     
                     // Fallback to localStorage
                     localStorage.setItem('userProfile', JSON.stringify(testProfileData));
