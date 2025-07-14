@@ -3079,12 +3079,41 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                         planning: 'Batch cook on weekends'
                     });
                     
-                    // Save test meal suggestions
-                    const currentPlan = await window.mealPlannerAPI.getMealPlan();
-                    const enhancedPlan = { ...currentPlan };
-                    enhancedPlan['monday'] = { breakfast: testMealPlan.breakfast[0], lunch: testMealPlan.lunch[0], dinner: testMealPlan.dinner[0] };
-                    enhancedPlan['tuesday'] = { breakfast: testMealPlan.breakfast[1] || testMealPlan.breakfast[0], lunch: testMealPlan.lunch[1] || testMealPlan.lunch[0], dinner: testMealPlan.dinner[1] || testMealPlan.dinner[0] };
-                    await window.mealPlannerAPI.saveMealPlan(enhancedPlan);
+                    // Create a fresh meal plan with test suggestions
+                    const enhancedPlan = {
+                        monday: { 
+                            breakfast: testMealPlan.breakfast[0], 
+                            lunch: testMealPlan.lunch[0], 
+                            dinner: testMealPlan.dinner[0] 
+                        },
+                        tuesday: { 
+                            breakfast: testMealPlan.breakfast[1] || testMealPlan.breakfast[0], 
+                            lunch: testMealPlan.lunch[1] || testMealPlan.lunch[0], 
+                            dinner: testMealPlan.dinner[1] || testMealPlan.dinner[0] 
+                        },
+                        wednesday: { 
+                            breakfast: testMealPlan.breakfast[0], 
+                            lunch: testMealPlan.lunch[0], 
+                            dinner: 'One-pot pasta with vegetables' 
+                        },
+                        thursday: { 
+                            breakfast: testMealPlan.breakfast[1] || testMealPlan.breakfast[0], 
+                            lunch: testMealPlan.lunch[1] || testMealPlan.lunch[0], 
+                            dinner: 'Sheet pan chicken and vegetables' 
+                        },
+                        friday: { 
+                            breakfast: testMealPlan.breakfast[0], 
+                            lunch: testMealPlan.lunch[0], 
+                            dinner: 'Teriyaki chicken bowl' 
+                        }
+                    };
+                    
+                    try {
+                        await window.mealPlannerAPI.saveMealPlan(enhancedPlan);
+                        console.log('✅ Test meal plan saved successfully');
+                    } catch (error) {
+                        console.error('❌ Error saving meal plan:', error);
+                    }
                     
                     // Generate and apply test schedule labels
                     const testScheduleLabels = generateScheduleLabels([
@@ -4501,6 +4530,40 @@ These suggestions consider your cooking level, dietary needs, flavor preferences
                 
                 // Set completion flag to prevent restart
                 onboardingCompleted = true;
+                
+                // Generate personalized meal plan based on user responses
+                try {
+                    const mealSuggestions = generateMealSuggestions({
+                        breakfast: responses[10]?.answer || 'Light breakfast',
+                        cuisine: responses[8]?.answer || 'Mixed cuisine',
+                        dietary: responses[3]?.answer || 'No restrictions',
+                        level: responses[2]?.answer || 'Beginner',
+                        planning: responses[9]?.answer || 'Simple planning'
+                    });
+                    
+                    const personalizedPlan = {
+                        monday: { 
+                            breakfast: mealSuggestions.breakfast[0], 
+                            lunch: mealSuggestions.lunch[0], 
+                            dinner: mealSuggestions.dinner[0] 
+                        },
+                        tuesday: { 
+                            breakfast: mealSuggestions.breakfast[1] || mealSuggestions.breakfast[0], 
+                            lunch: mealSuggestions.lunch[1] || mealSuggestions.lunch[0], 
+                            dinner: mealSuggestions.dinner[1] || mealSuggestions.dinner[0] 
+                        },
+                        wednesday: { 
+                            breakfast: mealSuggestions.breakfast[0], 
+                            lunch: mealSuggestions.lunch[0], 
+                            dinner: mealSuggestions.dinner[0] 
+                        }
+                    };
+                    
+                    await window.mealPlannerAPI.saveMealPlan(personalizedPlan);
+                    console.log('✅ Personalized meal plan generated and saved');
+                } catch (mealPlanError) {
+                    console.error('❌ Error generating meal plan:', mealPlanError);
+                }
                 
                 // Wait a moment for database consistency then verify save
                 setTimeout(async () => {
