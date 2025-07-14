@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Meal Planner - Auth Enabled (v2.1)</title>
+    <title>Weekly Meal Planner - Auth Enabled (v2.2)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Load Supabase from CDN -->
@@ -3065,6 +3065,10 @@ Instead of boring multiple choice questions, let's have a real conversation. I'l
                     console.log('💾 Attempting to save test profile:', testProfileData);
                     const result = await window.mealPlannerAPI.updateUserProfile(testProfileData);
                     console.log('✅ Test profile saved successfully:', result);
+                    
+                    // Verify the save worked
+                    const verifiedProfile = await window.mealPlannerAPI.getUserProfile();
+                    console.log('🔍 Verified profile after save:', verifiedProfile);
                     
                     // Set completion flag in session
                     onboardingCompleted = true;
