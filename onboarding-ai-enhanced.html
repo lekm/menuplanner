@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced AI Meal Planner Onboarding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .typing-indicator {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .quick-select-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .quick-select-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .quick-select-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-gray-600">Loading AI configuration...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-4xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-semibold text-gray-800">🍽️ Enhanced AI Meal Planner Setup</h1>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600">
+                        <span id="ai-status" class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">AI Ready</span>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <span id="model-info">OpenRouter • Gemini Flash</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Container -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Chat Messages -->
+            <div id="chat-container" class="h-96 overflow-y-auto p-6 space-y-4">
+                <!-- Messages will be populated here -->
+            </div>
+            
+            <!-- Input Area -->
+            <div id="input-area" class="border-t bg-gray-50 p-4">
+                <div class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Type your response here..."
+                        class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled
+                    >
+                    <button 
+                        onclick="sendMessage()"
+                        id="send-btn"
+                        class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                        disabled
+                    >
+                        Send
+                    </button>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    Press Enter to send • Use quick buttons when available, or type your own response
+                </div>
+            </div>
+        </div>
+        
+        <!-- Debug Panel -->
+        <div class="mt-6 bg-white rounded-lg shadow-lg p-4">
+            <details>
+                <summary class="cursor-pointer text-sm font-medium text-gray-700 mb-2">🔍 Debug & AI Analysis</summary>
+                <div id="debug-info" class="text-xs text-gray-600 bg-gray-50 p-3 rounded font-mono">
+                    Initializing...
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let aiConfig = {
+            provider: 'openrouter',
+            apiKey: '',
+            model: 'google/gemini-flash-1.5',
+            baseUrl: 'https://openrouter.ai/api/v1'
+        };
+
+        // Application state
+        let conversationHistory = [];
+        let userProfile = {};
+        let isProcessing = false;
+        let topicsCovered = {};
+        let userName = '';
+
+        // Topics we need to cover
+        const requiredTopics = [
+            'living_situation',
+            'accessibility_needs', 
+            'cooking_background',
+            'goals_challenges',
+            'kitchen_equipment',
+            'schedule_energy',
+            'dietary_restrictions',
+            'food_preferences',
+            'planning_style'
+        ];
+
+        // Quick select options for different topics
+        const quickSelectOptions = {
+            accessibility_needs: [
+                { value: 'adhd', label: '🧠 ADHD', description: 'Need systems that work with ADHD brain patterns' },
+                { value: 'depression', label: '💙 Depression/Anxiety', description: 'Low energy days are common' },
+                { value: 'chronic_fatigue', label: '😴 Chronic Fatigue/Illness', description: 'Energy levels vary significantly' },
+                { value: 'physical_limitations', label: '🦽 Physical Limitations', description: 'Mobility, dexterity, or strength considerations' },
+                { value: 'autism', label: '🧩 Autism/Sensory Processing', description: 'Need sensory-friendly approaches' },
+                { value: 'time_constraints', label: '⏰ Severe Time Constraints', description: 'Extremely busy schedule' },
+                { value: 'none', label: '✅ None of these apply', description: 'No specific accessibility needs' }
+            ],
+            cooking_background: [
+                { value: 'complete_beginner', label: '🌱 Complete Beginner', description: 'Just starting to learn cooking basics' },
+                { value: 'some_basics', label: '📚 Know Some Basics', description: 'Can make simple meals but want to improve' },
+                { value: 'confident_cook', label: '👨‍🍳 Confident Cook', description: 'Comfortable with most cooking techniques' },
+                { value: 'experienced_cook', label: '⭐ Experienced Cook', description: 'Advanced skills, love complex recipes' },
+                { value: 'planning_struggle', label: '📋 Good Cook, Bad Planner', description: 'Can cook well but struggle with meal planning' },
+                { value: 'rusty_skills', label: '🔄 Rusty Skills', description: 'Used to cook but out of practice' }
+            ],
+            goals_challenges: [
+                { value: 'save_money', label: '💰 Save Money', description: 'Reduce food costs and minimize waste' },
+                { value: 'eat_healthier', label: '🥗 Eat Healthier', description: 'Improve nutrition and diet quality' },
+                { value: 'save_time', label: '⏱️ Save Time', description: 'Reduce daily decision fatigue' },
+                { value: 'reduce_stress', label: '😌 Reduce Stress', description: 'Less "what\'s for dinner?" panic' },
+                { value: 'stop_takeout', label: '🍕 Stop Ordering Takeout', description: 'Cook more meals at home' },
+                { value: 'learn_cooking', label: '👨‍🍳 Learn to Cook Better', description: 'Improve cooking skills systematically' },
+                { value: 'meal_prep', label: '📦 Better Meal Prep', description: 'Batch cooking and preparation' }
+            ],
+            kitchen_equipment: [
+                { value: 'basic_tools', label: '🔪 Basic Tools', description: 'Knives, cutting board, pots, pans' },
+                { value: 'instant_pot', label: '🍲 Instant Pot/Pressure Cooker', description: 'For quick cooking under pressure' },
+                { value: 'slow_cooker', label: '🐌 Slow Cooker', description: 'For set-and-forget meals' },
+                { value: 'air_fryer', label: '🌪️ Air Fryer', description: 'For crispy foods without oil' },
+                { value: 'food_processor', label: '⚡ Food Processor', description: 'For chopping, mixing, processing' },
+                { value: 'stand_mixer', label: '🍞 Stand Mixer', description: 'For baking and mixing' },
+                { value: 'cast_iron', label: '🍳 Cast Iron Cookware', description: 'For high-heat cooking' },
+                { value: 'limited_kitchen', label: '🏠 Limited Kitchen', description: 'Minimal equipment, shared space' }
+            ],
+            schedule_energy: [
+                { value: 'morning_energy', label: '🌅 High Energy Mornings', description: 'Best time for prep and cooking' },
+                { value: 'evening_tired', label: '🌙 Tired After Work', description: 'Need quick, simple dinner options' },
+                { value: 'weekend_warrior', label: '🏖️ Weekend Batch Cooker', description: 'Time on weekends for meal prep' },
+                { value: 'unpredictable', label: '🎲 Unpredictable Energy', description: 'Energy levels change frequently' },
+                { value: 'consistent_schedule', label: '📅 Consistent Schedule', description: 'Regular routine and timing' }
+            ],
+            dietary_restrictions: [
+                { value: 'no_restrictions', label: '🍽️ No Restrictions', description: 'I can eat anything' },
+                { value: 'vegetarian', label: '🥕 Vegetarian', description: 'No meat, but dairy and eggs OK' },
+                { value: 'vegan', label: '🌱 Vegan', description: 'No animal products at all' },
+                { value: 'gluten_free', label: '🌾 Gluten-Free', description: 'No wheat, barley, rye' },
+                { value: 'dairy_free', label: '🥛 Dairy-Free', description: 'No milk, cheese, yogurt' },
+                { value: 'keto', label: '🥑 Keto/Low-Carb', description: 'Very low carbohydrate diet' },
+                { value: 'allergies', label: '🥜 Food Allergies', description: 'Specific allergies to avoid' }
+            ],
+            food_preferences: [
+                { value: 'italian', label: '🍝 Italian', description: 'Pasta, pizza, Mediterranean flavors' },
+                { value: 'asian', label: '🍜 Asian', description: 'Stir-fries, noodles, rice dishes' },
+                { value: 'mexican', label: '🌮 Mexican', description: 'Tacos, burritos, bold spices' },
+                { value: 'healthy_fresh', label: '🥗 Healthy & Fresh', description: 'Salads, grilled foods, clean eating' },
+                { value: 'comfort_food', label: '🍖 Comfort Food', description: 'Classic hearty meals' },
+                { value: 'simple_flavors', label: '🧂 Simple Flavors', description: 'Not too complex or exotic' },
+                { value: 'eat_anything', label: '🌍 I\'ll Eat Anything!', description: 'Adventurous eater, try anything' }
+            ],
+            planning_style: [
+                { value: 'detailed_lists', label: '📋 Detailed Lists', description: 'Love comprehensive plans and shopping lists' },
+                { value: 'flexible_framework', label: '🎯 Flexible Framework', description: 'Some structure but room for spontaneity' },
+                { value: 'batch_prep', label: '📦 Batch Prep', description: 'Cook large quantities on weekends' },
+                { value: 'daily_fresh', label: '🌱 Daily Fresh', description: 'Prefer to cook fresh each day' },
+                { value: 'minimal_effort', label: '😌 Minimal Effort', description: 'Simplest approach possible' }
+            ]
+        };
+
+        // Enhanced system prompt
+        const systemPrompt = `You are an AI assistant helping users set up comprehensive meal planning. You must gather detailed information through systematic questioning.
+
+CRITICAL REQUIREMENTS:
+1. Ask about ALL these topics: living situation, accessibility needs, cooking background, goals, kitchen equipment, schedule/energy, dietary restrictions, food preferences, planning style
+2. Use the quick-select options when available by calling showQuickSelect()
+3. Ask follow-up questions to get details
+4. Don't end the conversation until you've covered all topics thoroughly
+5. Use the user's name when they provide it
+6. Show empathy for accessibility needs and challenges
+7. Adapt questions based on previous responses
+
+CONVERSATION FLOW:
+1. Welcome and get name
+2. Living situation & kitchen setup
+3. Accessibility needs (ADHD, chronic illness, physical limitations, etc.)
+4. Cooking background and experience
+5. Goals and challenges
+6. Kitchen equipment and appliances
+7. Schedule and energy patterns
+8. Dietary restrictions and allergies
+9. Food preferences and cuisines
+10. Planning style preferences
+11. Any additional context
+12. Summary and completion
+
+IMPORTANT: Always ask for clarification if responses are vague. Don't move on until you have sufficient detail for each topic.
+
+When you want to show quick-select options, include this exact text: "SHOW_QUICK_SELECT: [topic_name]" where topic_name matches the keys in quickSelectOptions.`;
+
+        // Initialize app
+        async function initializeApp() {
+            try {
+                // Load configuration from server
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                if (config.openrouterApiKey) {
+                    aiConfig.apiKey = config.openrouterApiKey;
+                    aiConfig.provider = config.aiProvider || 'openrouter';
+                    aiConfig.model = config.aiModel || 'google/gemini-flash-1.5';
+                    
+                    // Hide loading screen
+                    document.getElementById('loading-screen').style.display = 'none';
+                    
+                    // Enable input
+                    document.getElementById('user-input').disabled = false;
+                    document.getElementById('send-btn').disabled = false;
+                    
+                    // Update UI
+                    updateAiStatus('Connected');
+                    document.getElementById('model-info').textContent = `${aiConfig.provider} • ${aiConfig.model}`;
+                    
+                    // Start conversation
+                    startConversation();
+                } else {
+                    throw new Error('No API key found');
+                }
+            } catch (error) {
+                console.error('Configuration error:', error);
+                document.getElementById('loading-screen').innerHTML = `
+                    <div class="text-center">
+                        <div class="text-red-500 text-6xl mb-4">❌</div>
+                        <p class="text-red-600 font-medium">Configuration Error</p>
+                        <p class="text-gray-600 text-sm mt-2">Please check your .env file and restart the server</p>
+                    </div>
+                `;
+                updateAiStatus('Error');
+            }
+            
+            // Add enter key handler
+            document.getElementById('user-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        // Update AI status
+        function updateAiStatus(status) {
+            const statusEl = document.getElementById('ai-status');
+            statusEl.textContent = status;
+            statusEl.className = `px-2 py-1 rounded-full text-xs ${
+                status === 'Connected' ? 'bg-green-100 text-green-800' :
+                status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+            }`;
+        }
+
+        // Start conversation
+        async function startConversation() {
+            addMessage('ai', 'Hi! I\'m excited to help you create a meal planning system that actually works for your life. I\'ll ask you comprehensive questions to understand your cooking style, preferences, and what you\'re hoping to achieve.');
+            
+            setTimeout(() => {
+                addMessage('ai', 'First, what\'s your name? I\'d love to personalize this conversation for you.');
+            }, 1500);
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            // Clear any quick select options
+            clearQuickSelect();
+            
+            // Store user response
+            conversationHistory.push({ role: 'user', content: message });
+            
+            // Extract name if provided
+            if (!userName && (message.toLowerCase().includes('name') || message.toLowerCase().includes('i\'m') || message.toLowerCase().includes('call me'))) {
+                const nameMatch = message.match(/(?:name is|i'm|call me)\s+(\w+)/i);
+                if (nameMatch) {
+                    userName = nameMatch[1];
+                }
+            }
+            
+            // Show typing indicator and processing status
+            const typingId = addTypingIndicator();
+            updateAiStatus('Processing');
+            
+            // Get AI response
+            try {
+                const response = await getAiResponse(message);
+                removeTypingIndicator(typingId);
+                
+                // Check if AI wants to show quick select
+                if (response.includes('SHOW_QUICK_SELECT:')) {
+                    const parts = response.split('SHOW_QUICK_SELECT:');
+                    const beforePrompt = parts[0].trim();
+                    const topicMatch = parts[1].trim().split(/\s+/)[0];
+                    
+                    if (beforePrompt) {
+                        addMessage('ai', beforePrompt);
+                    }
+                    
+                    showQuickSelect(topicMatch);
+                } else {
+                    addMessage('ai', response);
+                }
+                
+                conversationHistory.push({ role: 'assistant', content: response });
+                updateAiStatus('Connected');
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage('ai', 'Sorry, I encountered an error. Please try again.');
+                console.error('AI Error:', error);
+                updateAiStatus('Error');
+            }
+            
+            updateDebugInfo();
+        }
+
+        // Show quick select options
+        function showQuickSelect(topic) {
+            const options = quickSelectOptions[topic];
+            if (!options) return;
+            
+            const inputArea = document.getElementById('input-area');
+            const optionsHtml = options.map(option => `
+                <button 
+                    onclick="selectQuickOption('${option.value}', '${option.label}', this)"
+                    class="quick-select-btn text-left p-3 border border-gray-300 rounded-lg hover:border-blue-500 transition"
+                    data-value="${option.value}"
+                >
+                    <div class="font-medium">${option.label}</div>
+                    <div class="text-sm text-gray-600">${option.description}</div>
+                </button>
+            `).join('');
+            
+            inputArea.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto">
+                        ${optionsHtml}
+                    </div>
+                    <div class="border-t pt-4">
+                        <div class="flex space-x-3">
+                            <input 
+                                type="text" 
+                                id="custom-input" 
+                                placeholder="Or type your own response..."
+                                class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                            <button 
+                                onclick="sendCustomResponse()"
+                                class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+                            >
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add enter key handler for custom input
+            document.getElementById('custom-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendCustomResponse();
+                }
+            });
+        }
+
+        // Handle quick select option
+        function selectQuickOption(value, label, button) {
+            // Toggle selection
+            button.classList.toggle('selected');
+            
+            // Handle mutually exclusive options
+            if (value === 'none' || value === 'no_restrictions' || value === 'eat_anything') {
+                if (button.classList.contains('selected')) {
+                    document.querySelectorAll('.quick-select-btn').forEach(btn => {
+                        if (btn !== button) {
+                            btn.classList.remove('selected');
+                        }
+                    });
+                }
+            } else {
+                // Deselect "none" type options
+                document.querySelectorAll('.quick-select-btn').forEach(btn => {
+                    const val = btn.dataset.value;
+                    if (val === 'none' || val === 'no_restrictions' || val === 'eat_anything') {
+                        btn.classList.remove('selected');
+                    }
+                });
+            }
+            
+            // Auto-submit after a brief delay
+            setTimeout(() => {
+                const selectedOptions = [];
+                document.querySelectorAll('.quick-select-btn.selected').forEach(btn => {
+                    selectedOptions.push(btn.querySelector('.font-medium').textContent);
+                });
+                
+                if (selectedOptions.length > 0) {
+                    const response = selectedOptions.join(', ');
+                    addMessage('user', response);
+                    clearQuickSelect();
+                    
+                    // Add to conversation and get AI response
+                    conversationHistory.push({ role: 'user', content: response });
+                    processAiResponse(response);
+                }
+            }, 300);
+        }
+
+        // Send custom response
+        function sendCustomResponse() {
+            const input = document.getElementById('custom-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage('user', message);
+            clearQuickSelect();
+            
+            conversationHistory.push({ role: 'user', content: message });
+            processAiResponse(message);
+        }
+
+        // Process AI response
+        async function processAiResponse(userMessage) {
+            const typingId = addTypingIndicator();
+            updateAiStatus('Processing');
+            
+            try {
+                const response = await getAiResponse(userMessage);
+                removeTypingIndicator(typingId);
+                
+                // Check if AI wants to show quick select
+                if (response.includes('SHOW_QUICK_SELECT:')) {
+                    const parts = response.split('SHOW_QUICK_SELECT:');
+                    const beforePrompt = parts[0].trim();
+                    const topicMatch = parts[1].trim().split(/\s+/)[0];
+                    
+                    if (beforePrompt) {
+                        addMessage('ai', beforePrompt);
+                    }
+                    
+                    showQuickSelect(topicMatch);
+                } else {
+                    addMessage('ai', response);
+                }
+                
+                conversationHistory.push({ role: 'assistant', content: response });
+                updateAiStatus('Connected');
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage('ai', 'Sorry, I encountered an error. Please try again.');
+                console.error('AI Error:', error);
+                updateAiStatus('Error');
+            }
+            
+            updateDebugInfo();
+        }
+
+        // Clear quick select and restore normal input
+        function clearQuickSelect() {
+            const inputArea = document.getElementById('input-area');
+            inputArea.innerHTML = `
+                <div class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Type your response here..."
+                        class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                    <button 
+                        onclick="sendMessage()"
+                        id="send-btn"
+                        class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+                    >
+                        Send
+                    </button>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    Press Enter to send • Use quick buttons when available, or type your own response
+                </div>
+            `;
+            
+            // Re-add enter key handler
+            document.getElementById('user-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        // Get AI response
+        async function getAiResponse(userMessage) {
+            isProcessing = true;
+            
+            try {
+                const messages = [
+                    { role: 'system', content: systemPrompt },
+                    ...conversationHistory
+                ];
+                
+                const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${aiConfig.apiKey}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'Meal Planner Onboarding'
+                    },
+                    body: JSON.stringify({
+                        model: aiConfig.model,
+                        messages: messages,
+                        max_tokens: 400,
+                        temperature: 0.7,
+                        stream: false
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} - ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                return data.choices[0].message.content;
+                
+            } catch (error) {
+                console.error('AI API Error:', error);
+                throw error;
+            } finally {
+                isProcessing = false;
+            }
+        }
+
+        // Add message to chat
+        function addMessage(type, content) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex items-start space-x-3 fade-in ${type === 'user' ? 'justify-end' : ''}`;
+            
+            if (type === 'ai') {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+                    <div class="message-bubble bg-gray-100 p-3 rounded-lg">
+                        <p class="text-gray-800">${content}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-bubble bg-blue-500 text-white p-3 rounded-lg">
+                        <p>${content}</p>
+                    </div>
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-sm">👤</div>
+                `;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Add typing indicator
+        function addTypingIndicator() {
+            const chatContainer = document.getElementById('chat-container');
+            const typingDiv = document.createElement('div');
+            const typingId = 'typing-' + Date.now();
+            typingDiv.id = typingId;
+            typingDiv.className = 'flex items-start space-x-3 fade-in';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+                <div class="message-bubble bg-gray-100 p-3 rounded-lg">
+                    <div class="typing-indicator text-gray-600">AI is thinking...</div>
+                </div>
+            `;
+            
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            return typingId;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator(typingId) {
+            const typingDiv = document.getElementById(typingId);
+            if (typingDiv) {
+                typingDiv.remove();
+            }
+        }
+
+        // Update debug info
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML = `
+Provider: ${aiConfig.provider}
+Model: ${aiConfig.model}
+User Name: ${userName || 'Not provided'}
+Messages: ${conversationHistory.length}
+Topics Covered: ${Object.keys(topicsCovered).join(', ')}
+
+Latest Conversation:
+${JSON.stringify(conversationHistory.slice(-4), null, 2)}
+
+Required Topics:
+${requiredTopics.map(topic => `${topic}: ${topicsCovered[topic] ? '✅' : '❌'}`).join('\n')}
+            `;
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', initializeApp);
+    </script>
+</body>
+</html>

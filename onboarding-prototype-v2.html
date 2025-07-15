@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Planner - Adaptive Onboarding Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .typing-indicator {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .quick-select-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .quick-select-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .quick-select-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-4xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-semibold text-gray-800">🍽️ Meal Planner Setup</h1>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600">
+                        Step <span id="current-step">1</span> of <span id="total-steps">12</span>
+                    </div>
+                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                        <div id="progress-bar" class="progress-bar h-2 rounded-full" style="width: 8.33%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Container -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Chat Messages -->
+            <div id="chat-container" class="h-96 overflow-y-auto p-6 space-y-4">
+                <!-- Messages will be populated here -->
+            </div>
+            
+            <!-- Input Area -->
+            <div id="input-area" class="border-t bg-gray-50 p-4">
+                <!-- Input will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Debug Panel -->
+        <div class="mt-6 bg-white rounded-lg shadow-lg p-4">
+            <details>
+                <summary class="cursor-pointer text-sm font-medium text-gray-700 mb-2">🔍 Debug Info & AI Responses</summary>
+                <div id="debug-info" class="text-xs text-gray-600 bg-gray-50 p-3 rounded font-mono">
+                    <!-- Debug info will be populated here -->
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        let currentStep = 0;
+        let responses = {};
+        let isProcessing = false;
+        let userProfile = {}; // AI builds this as we go
+
+        // AI Response Generator - analyzes responses and adapts
+        class OnboardingAI {
+            static analyzeResponse(field, value) {
+                const analysis = {
+                    field: field,
+                    value: value,
+                    insights: [],
+                    followUpNeeded: false,
+                    adaptedResponse: ''
+                };
+
+                switch(field) {
+                    case 'age_living_situation':
+                        analysis.insights = this.analyzeAgeAndLiving(value);
+                        break;
+                    case 'accessibility_needs':
+                        analysis.insights = this.analyzeAccessibility(value);
+                        break;
+                    case 'cooking_background':
+                        analysis.insights = this.analyzeCookingBackground(value);
+                        break;
+                    case 'goals_challenges':
+                        analysis.insights = this.analyzeGoals(value);
+                        break;
+                    case 'kitchen_equipment':
+                        analysis.insights = this.analyzeEquipment(value);
+                        break;
+                    case 'schedule_energy':
+                        analysis.insights = this.analyzeSchedule(value);
+                        break;
+                    case 'dietary_restrictions':
+                        analysis.insights = this.analyzeDietary(value);
+                        break;
+                    case 'sensory_food_issues':
+                        analysis.insights = this.analyzeSensory(value);
+                        break;
+                    case 'food_dislikes':
+                        analysis.insights = this.analyzeDislikes(value);
+                        break;
+                    case 'flavor_preferences':
+                        analysis.insights = this.analyzeFlavorPreferences(value);
+                        break;
+                    case 'planning_style':
+                        analysis.insights = this.analyzePlanningStyle(value);
+                        break;
+                    case 'additional_context':
+                        analysis.insights = this.analyzeAdditionalContext(value);
+                        break;
+                }
+
+                // Update user profile
+                userProfile[field] = value;
+                userProfile.insights = userProfile.insights || [];
+                userProfile.insights.push(...analysis.insights);
+
+                return analysis;
+            }
+
+            static analyzeAgeAndLiving(value) {
+                const insights = [];
+                const lowerValue = value.toLowerCase();
+                
+                if (lowerValue.includes('student') || lowerValue.includes('university')) {
+                    insights.push('budget_conscious');
+                    insights.push('time_constrained');
+                }
+                if (lowerValue.includes('shared') || lowerValue.includes('flatmate') || lowerValue.includes('roommate')) {
+                    insights.push('shared_kitchen');
+                    insights.push('storage_limited');
+                }
+                if (lowerValue.includes('family') || lowerValue.includes('kids') || lowerValue.includes('children')) {
+                    insights.push('family_cooking');
+                    insights.push('kid_friendly_needed');
+                }
+                if (lowerValue.includes('alone') || lowerValue.includes('single') || lowerValue.includes('by myself')) {
+                    insights.push('single_portions');
+                    insights.push('flexible_schedule');
+                }
+                
+                return insights;
+            }
+
+            static analyzeAccessibility(value) {
+                const insights = [];
+                if (value.includes('adhd')) {
+                    insights.push('needs_simple_systems');
+                    insights.push('executive_function_support');
+                }
+                if (value.includes('depression') || value.includes('anxiety')) {
+                    insights.push('low_energy_options');
+                    insights.push('gentle_approach');
+                }
+                if (value.includes('chronic_fatigue')) {
+                    insights.push('energy_variable');
+                    insights.push('prep_intensive_alternatives');
+                }
+                return insights;
+            }
+
+            static analyzeCookingBackground(value) {
+                const insights = [];
+                const lowerValue = value.toLowerCase();
+                
+                if (lowerValue.includes('beginner') || lowerValue.includes('new') || lowerValue.includes('learning')) {
+                    insights.push('needs_basic_techniques');
+                    insights.push('step_by_step_guidance');
+                }
+                if (lowerValue.includes('confident') || lowerValue.includes('experienced') || lowerValue.includes('comfortable')) {
+                    insights.push('can_handle_complexity');
+                    insights.push('wants_efficiency');
+                }
+                if (lowerValue.includes('planning') || lowerValue.includes('organize')) {
+                    insights.push('organization_challenge');
+                    insights.push('needs_structure');
+                }
+                
+                return insights;
+            }
+
+            static analyzeGoals(value) {
+                const insights = [];
+                if (value.includes('money') || value.includes('budget')) {
+                    insights.push('cost_conscious');
+                    insights.push('bulk_buying');
+                }
+                if (value.includes('health') || value.includes('nutrition')) {
+                    insights.push('health_focused');
+                    insights.push('nutrition_tracking');
+                }
+                if (value.includes('takeout') || value.includes('delivery')) {
+                    insights.push('convenience_competitor');
+                    insights.push('quick_options_needed');
+                }
+                return insights;
+            }
+
+            static analyzeEquipment(value) {
+                const insights = [];
+                if (value.includes('instant_pot') || value.includes('pressure')) {
+                    insights.push('pressure_cooker_recipes');
+                    insights.push('quick_cooking');
+                }
+                if (value.includes('limited') || value.includes('basic')) {
+                    insights.push('simple_equipment_only');
+                    insights.push('one_pot_meals');
+                }
+                if (value.includes('stand_mixer') || value.includes('food_processor')) {
+                    insights.push('advanced_equipment');
+                    insights.push('batch_prep_capable');
+                }
+                return insights;
+            }
+
+            static analyzeSchedule(value) {
+                const insights = [];
+                const lowerValue = value.toLowerCase();
+                
+                if (lowerValue.includes('morning') && lowerValue.includes('energy')) {
+                    insights.push('morning_prep_suitable');
+                }
+                if (lowerValue.includes('tired') || lowerValue.includes('exhausted')) {
+                    insights.push('evening_fatigue');
+                    insights.push('prep_ahead_needed');
+                }
+                if (lowerValue.includes('weekend')) {
+                    insights.push('weekend_batch_cooking');
+                }
+                
+                return insights;
+            }
+
+            static analyzeDietary(value) {
+                const insights = [];
+                if (value.includes('vegetarian')) {
+                    insights.push('vegetarian_recipes');
+                    insights.push('protein_alternatives');
+                }
+                if (value.includes('vegan')) {
+                    insights.push('vegan_recipes');
+                    insights.push('plant_based_focus');
+                }
+                if (value.includes('gluten')) {
+                    insights.push('gluten_free_options');
+                    insights.push('alternative_grains');
+                }
+                return insights;
+            }
+
+            static analyzeSensory(value) {
+                const insights = [];
+                if (value.includes('texture')) {
+                    insights.push('texture_considerations');
+                    insights.push('smooth_alternatives');
+                }
+                if (value.includes('spicy') || value.includes('heat')) {
+                    insights.push('heat_sensitive');
+                    insights.push('mild_flavors');
+                }
+                return insights;
+            }
+
+            static analyzeDislikes(value) {
+                const insights = [];
+                if (value.includes('vegetables') || value.includes('veggies')) {
+                    insights.push('vegetable_aversion');
+                    insights.push('hidden_vegetable_techniques');
+                }
+                if (value.includes('seafood') || value.includes('fish')) {
+                    insights.push('no_seafood');
+                    insights.push('land_proteins_only');
+                }
+                return insights;
+            }
+
+            static analyzeFlavorPreferences(value) {
+                const insights = [];
+                if (value.includes('spicy') || value.includes('heat')) {
+                    insights.push('heat_lover');
+                    insights.push('bold_flavors');
+                }
+                if (value.includes('simple') || value.includes('mild')) {
+                    insights.push('simple_flavors');
+                    insights.push('subtle_seasoning');
+                }
+                return insights;
+            }
+
+            static analyzePlanningStyle(value) {
+                const insights = [];
+                if (value.includes('detailed') || value.includes('structure')) {
+                    insights.push('detailed_planner');
+                    insights.push('comprehensive_lists');
+                }
+                if (value.includes('flexible') || value.includes('spontaneous')) {
+                    insights.push('flexible_approach');
+                    insights.push('adaptable_plans');
+                }
+                return insights;
+            }
+
+            static analyzeAdditionalContext(value) {
+                const insights = [];
+                // This would analyze any additional context provided
+                return insights;
+            }
+
+            static generateAdaptiveResponse(previousResponses) {
+                // Generate contextual responses based on what we've learned
+                const messages = [];
+                
+                if (userProfile.insights?.includes('shared_kitchen')) {
+                    messages.push("Since you're in a shared kitchen, I'll focus on meals that don't require lots of prep space and are considerate of others.");
+                }
+                
+                if (userProfile.insights?.includes('budget_conscious')) {
+                    messages.push("I'll prioritize cost-effective ingredients and recipes that stretch your budget.");
+                }
+                
+                if (userProfile.insights?.includes('needs_simple_systems')) {
+                    messages.push("I'll keep the organization simple and ADHD-friendly with clear, manageable steps.");
+                }
+                
+                return messages.length > 0 ? messages[Math.floor(Math.random() * messages.length)] : '';
+            }
+        }
+
+        // Enhanced onboarding flow with adaptive responses
+        const onboardingFlowTemplate = [
+            {
+                id: 'welcome',
+                type: 'system_message',
+                message: "Hi! I'm excited to help you create a meal planning system that actually works for your life. This will take about 10-15 minutes, and I'll ask you some questions to understand your cooking style, preferences, and what you're hoping to achieve.",
+                delay: 1000
+            },
+            {
+                id: 'start_question',
+                type: 'system_message',
+                message: "Let's start with the basics - tell me a bit about your age and living situation? This helps me understand your cooking context and constraints.",
+                delay: 2000
+            },
+            {
+                id: 'age_living',
+                type: 'text_input',
+                placeholder: "e.g., I'm 28 and live in a shared flat with flatmates, or I'm a student in university housing...",
+                field: 'age_living_situation',
+                validation: 'required'
+            },
+            {
+                id: 'accessibility_intro',
+                type: 'adaptive_message',
+                generateMessage: () => {
+                    const baseMessage = "Got it! Now, I want to make sure this system works for everyone. Do any of these situations apply to you?";
+                    const adaptiveMessage = OnboardingAI.generateAdaptiveResponse(responses);
+                    return adaptiveMessage ? `${baseMessage} ${adaptiveMessage}` : baseMessage;
+                },
+                delay: 1500
+            },
+            {
+                id: 'accessibility',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'adhd', label: '🧠 ADHD', description: 'Need systems that work with ADHD brain patterns' },
+                    { value: 'depression', label: '💙 Depression/Anxiety', description: 'Low energy days are common' },
+                    { value: 'chronic_fatigue', label: '😴 Chronic Fatigue/Chronic Illness', description: 'Energy levels vary significantly' },
+                    { value: 'physical_limitations', label: '🦽 Physical Limitations', description: 'Mobility, dexterity, or strength considerations' },
+                    { value: 'autism', label: '🧩 Autism/Sensory Processing', description: 'Need sensory-friendly approaches' },
+                    { value: 'time_constraints', label: '⏰ Severe Time Constraints', description: 'Extremely busy schedule' },
+                    { value: 'none', label: '✅ None of these apply', description: 'No specific accessibility needs' }
+                ],
+                field: 'accessibility_needs',
+                allow_text: true,
+                text_placeholder: "Or describe your situation in your own words..."
+            },
+            {
+                id: 'cooking_background_intro',
+                type: 'adaptive_message',
+                generateMessage: () => {
+                    let message = "Thank you for sharing that - it's really helpful to know.";
+                    const adaptiveMessage = OnboardingAI.generateAdaptiveResponse(responses);
+                    if (adaptiveMessage) message += ` ${adaptiveMessage}`;
+                    return `${message} Now, tell me about your relationship with cooking...`;
+                },
+                delay: 2000
+            },
+            {
+                id: 'cooking_background',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'complete_beginner', label: '🌱 Complete Beginner', description: 'Just starting to learn cooking basics' },
+                    { value: 'some_basics', label: '📚 Know Some Basics', description: 'Can make simple meals but want to improve' },
+                    { value: 'confident_cook', label: '👨‍🍳 Confident Cook', description: 'Comfortable with most cooking techniques' },
+                    { value: 'experienced_cook', label: '⭐ Experienced Cook', description: 'Advanced skills, love complex recipes' },
+                    { value: 'planning_struggle', label: '📋 Good Cook, Bad Planner', description: 'Can cook well but struggle with meal planning' },
+                    { value: 'rusty_skills', label: '🔄 Rusty Skills', description: 'Used to cook but out of practice' },
+                    { value: 'inconsistent', label: '🎭 Inconsistent', description: 'Sometimes love it, sometimes avoid it' }
+                ],
+                field: 'cooking_background',
+                allow_text: true,
+                text_placeholder: "Or describe your cooking background in your own words..."
+            },
+            {
+                id: 'goals_intro',
+                type: 'adaptive_message',
+                generateMessage: () => {
+                    const message = "That's great context! Now, what are you hoping to achieve with meal planning? What challenges are you trying to solve?";
+                    const adaptiveMessage = OnboardingAI.generateAdaptiveResponse(responses);
+                    return adaptiveMessage ? `${message} ${adaptiveMessage}` : message;
+                },
+                delay: 1500
+            },
+            {
+                id: 'goals',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'save_money', label: '💰 Save Money', description: 'Reduce food costs and minimize waste' },
+                    { value: 'eat_healthier', label: '🥗 Eat Healthier', description: 'Improve nutrition and diet quality' },
+                    { value: 'save_time', label: '⏱️ Save Time', description: 'Reduce daily decision fatigue' },
+                    { value: 'reduce_stress', label: '😌 Reduce Stress', description: 'Less "what\'s for dinner?" panic' },
+                    { value: 'stop_takeout', label: '🍕 Stop Ordering Takeout', description: 'Cook more meals at home' },
+                    { value: 'learn_cooking', label: '👨‍🍳 Learn to Cook Better', description: 'Improve cooking skills systematically' },
+                    { value: 'meal_prep', label: '📦 Better Meal Prep', description: 'Batch cooking and preparation' },
+                    { value: 'family_meals', label: '👨‍👩‍👧‍👦 Family Meals', description: 'Plan meals that work for everyone' },
+                    { value: 'weight_management', label: '⚖️ Weight Management', description: 'Support health and fitness goals' },
+                    { value: 'food_variety', label: '🌍 More Food Variety', description: 'Break out of cooking ruts' }
+                ],
+                field: 'goals_challenges',
+                allow_text: true,
+                text_placeholder: "Or describe your goals and challenges in your own words..."
+            },
+            {
+                id: 'kitchen_intro',
+                type: 'system_message',
+                message: "Perfect! Those are great goals. Now let's talk about your kitchen setup. What equipment and appliances do you have access to? This helps me suggest recipes that actually work for your situation.",
+                delay: 1500
+            },
+            {
+                id: 'kitchen_equipment',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'basic_tools', label: '🔪 Basic Tools', description: 'Knives, cutting board, pots, pans' },
+                    { value: 'stand_mixer', label: '🍞 Stand Mixer', description: 'KitchenAid or similar for baking' },
+                    { value: 'food_processor', label: '⚡ Food Processor', description: 'For chopping, mixing, and processing' },
+                    { value: 'blender', label: '🥤 High-Speed Blender', description: 'Vitamix, Nutribullet, or similar' },
+                    { value: 'instant_pot', label: '🍲 Instant Pot/Pressure Cooker', description: 'For quick cooking under pressure' },
+                    { value: 'slow_cooker', label: '🐌 Slow Cooker/Crock Pot', description: 'For set-and-forget meals' },
+                    { value: 'cast_iron', label: '🍳 Cast Iron Cookware', description: 'For high-heat cooking and baking' },
+                    { value: 'air_fryer', label: '🌪️ Air Fryer', description: 'For crispy foods without oil' },
+                    { value: 'sous_vide', label: '🎯 Sous Vide', description: 'Precision temperature cooking' },
+                    { value: 'rice_cooker', label: '🍚 Rice Cooker', description: 'For perfect rice and grains' },
+                    { value: 'bread_machine', label: '🍞 Bread Machine', description: 'For homemade bread' },
+                    { value: 'pizza_stone', label: '🍕 Pizza Stone/Oven', description: 'For pizza and bread baking' },
+                    { value: 'mandoline', label: '🥒 Mandoline Slicer', description: 'For precise, thin slicing' },
+                    { value: 'immersion_blender', label: '🥄 Immersion Blender', description: 'For soups and sauces' },
+                    { value: 'dutch_oven', label: '🥘 Dutch Oven', description: 'For braising and bread baking' },
+                    { value: 'wok', label: '🥢 Wok', description: 'For stir-frying and Asian cooking' },
+                    { value: 'grill', label: '🔥 Grill/BBQ', description: 'Outdoor or indoor grilling' },
+                    { value: 'dehydrator', label: '🍄 Dehydrator', description: 'For drying fruits and making jerky' },
+                    { value: 'pasta_machine', label: '🍝 Pasta Machine', description: 'For fresh pasta making' },
+                    { value: 'limited_kitchen', label: '🏠 Very Limited Kitchen', description: 'Minimal equipment, shared space' }
+                ],
+                field: 'kitchen_equipment',
+                allow_text: true,
+                text_placeholder: "Or describe your kitchen setup and equipment..."
+            },
+            {
+                id: 'schedule_intro',
+                type: 'system_message',
+                message: "Great! Knowing your equipment helps me suggest the right recipes. Now, tell me about your schedule and energy patterns throughout the week. When do you have time and energy to cook?",
+                delay: 1500
+            },
+            {
+                id: 'schedule_energy',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'morning_energy', label: '🌅 High Energy Mornings', description: 'Best time for prep and cooking' },
+                    { value: 'evening_tired', label: '🌙 Tired After Work', description: 'Need quick, simple dinner options' },
+                    { value: 'weekend_warrior', label: '🏖️ Weekend Batch Cooker', description: 'Time on weekends for meal prep' },
+                    { value: 'shift_worker', label: '🔄 Shift Work', description: 'Irregular schedule, varies by day' },
+                    { value: 'night_owl', label: '🦉 Night Owl', description: 'More energy in evenings' },
+                    { value: 'consistent_schedule', label: '📅 Consistent Schedule', description: 'Regular 9-5 type schedule' },
+                    { value: 'unpredictable', label: '🎲 Unpredictable', description: 'Schedule changes frequently' },
+                    { value: 'lunch_prep', label: '🥪 Lunch Prep Focus', description: 'Need work lunch solutions' }
+                ],
+                field: 'schedule_energy',
+                allow_text: true,
+                text_placeholder: "Or describe your schedule and energy patterns..."
+            },
+            {
+                id: 'dietary_intro',
+                type: 'system_message',
+                message: "That's really helpful for timing suggestions! Now let's talk about any dietary restrictions or requirements you have. This includes allergies, intolerances, or chosen dietary approaches.",
+                delay: 1500
+            },
+            {
+                id: 'dietary_restrictions',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'no_restrictions', label: '🍽️ No Restrictions', description: 'I can eat anything' },
+                    { value: 'vegetarian', label: '🥕 Vegetarian', description: 'No meat, but dairy and eggs OK' },
+                    { value: 'vegan', label: '🌱 Vegan', description: 'No animal products at all' },
+                    { value: 'pescatarian', label: '🐟 Pescatarian', description: 'Fish OK, but no other meat' },
+                    { value: 'gluten_free', label: '🌾 Gluten-Free', description: 'No wheat, barley, rye' },
+                    { value: 'dairy_free', label: '🥛 Dairy-Free/Lactose Intolerant', description: 'No milk, cheese, yogurt' },
+                    { value: 'keto', label: '🥑 Keto/Low-Carb', description: 'Very low carbohydrate diet' },
+                    { value: 'paleo', label: '🥩 Paleo', description: 'Whole foods, no processed foods' },
+                    { value: 'low_fodmap', label: '🍎 Low FODMAP', description: 'For IBS/digestive issues' },
+                    { value: 'nut_allergies', label: '🥜 Nut Allergies', description: 'Tree nuts or peanuts' },
+                    { value: 'shellfish_allergy', label: '🦐 Shellfish Allergy', description: 'Cannot eat shellfish' },
+                    { value: 'religious_dietary', label: '🕌 Religious Dietary Laws', description: 'Halal, Kosher, etc.' },
+                    { value: 'reducing_meat', label: '🌿 Reducing Meat', description: 'Eating less meat, but not vegetarian' }
+                ],
+                field: 'dietary_restrictions',
+                allow_text: true,
+                text_placeholder: "Or describe your dietary needs and restrictions..."
+            },
+            {
+                id: 'sensory_intro',
+                type: 'system_message',
+                message: "Now let's talk about food textures, sensory issues, or strong preferences. This is really important for making sure I suggest foods you'll actually enjoy eating!",
+                delay: 1500
+            },
+            {
+                id: 'sensory_food_issues',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'no_issues', label: '👌 No Issues', description: 'Fine with most textures and foods' },
+                    { value: 'texture_sensitive', label: '🤚 Texture Sensitive', description: 'Certain textures are difficult' },
+                    { value: 'mushy_foods', label: '🍌 Dislike Mushy Foods', description: 'Prefer foods with more structure' },
+                    { value: 'chunky_foods', label: '🥕 Dislike Chunky Foods', description: 'Prefer smoother textures' },
+                    { value: 'mixed_textures', label: '🥗 Mixed Textures Difficult', description: 'Prefer consistent textures' },
+                    { value: 'spicy_sensitive', label: '🌶️ Spice Sensitive', description: 'Cannot handle heat/spice' },
+                    { value: 'strong_flavors', label: '💪 Dislike Strong Flavors', description: 'Prefer milder tastes' },
+                    { value: 'smell_sensitive', label: '👃 Smell Sensitive', description: 'Strong smells while cooking are difficult' },
+                    { value: 'temperature_sensitive', label: '🌡️ Temperature Sensitive', description: 'Food temperature matters a lot' },
+                    { value: 'visual_appearance', label: '👀 Visual Appearance Matters', description: 'Food needs to look appealing' }
+                ],
+                field: 'sensory_food_issues',
+                allow_text: true,
+                text_placeholder: "Or describe your food sensitivities and preferences..."
+            },
+            {
+                id: 'dislikes_intro',
+                type: 'system_message',
+                message: "Great! Now, what foods do you absolutely dislike or refuse to eat? I want to make sure I never suggest these in your meal plans.",
+                delay: 1500
+            },
+            {
+                id: 'food_dislikes',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'no_dislikes', label: '😋 Nothing Major', description: 'I\'ll eat most things' },
+                    { value: 'vegetables', label: '🥬 Most Vegetables', description: 'Not a fan of vegetables' },
+                    { value: 'seafood', label: '🐟 Seafood/Fish', description: 'Don\'t like fish or shellfish' },
+                    { value: 'mushrooms', label: '🍄 Mushrooms', description: 'Texture and/or taste issue' },
+                    { value: 'onions', label: '🧅 Onions', description: 'Raw or cooked onions' },
+                    { value: 'tomatoes', label: '🍅 Tomatoes', description: 'Fresh tomatoes (sauces might be OK)' },
+                    { value: 'beans_legumes', label: '🫘 Beans/Legumes', description: 'Texture or digestive issues' },
+                    { value: 'organ_meats', label: '🫀 Organ Meats', description: 'Liver, kidney, etc.' },
+                    { value: 'processed_meat', label: '🌭 Processed Meats', description: 'Hot dogs, lunch meat, etc.' },
+                    { value: 'dairy', label: '🧀 Dairy Products', description: 'Taste or tolerance issues' },
+                    { value: 'eggs', label: '🥚 Eggs', description: 'Texture or taste issues' },
+                    { value: 'coconut', label: '🥥 Coconut', description: 'Texture or flavor issues' },
+                    { value: 'avocado', label: '🥑 Avocado', description: 'Texture or taste issues' },
+                    { value: 'cilantro', label: '🌿 Cilantro', description: 'Tastes like soap or just dislike' }
+                ],
+                field: 'food_dislikes',
+                allow_text: true,
+                text_placeholder: "Or list specific foods you dislike..."
+            },
+            {
+                id: 'preferences_intro',
+                type: 'system_message',
+                message: "Perfect! Now for the fun part - what kinds of flavors and cuisines do you enjoy? This helps me suggest meals you'll actually be excited to eat!",
+                delay: 1500
+            },
+            {
+                id: 'flavor_preferences',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'italian', label: '🍝 Italian', description: 'Pasta, pizza, Mediterranean flavors' },
+                    { value: 'asian', label: '🍜 Asian', description: 'Chinese, Japanese, Thai, Korean' },
+                    { value: 'mexican', label: '🌮 Mexican/Latin', description: 'Tacos, burritos, bold spices' },
+                    { value: 'indian', label: '🍛 Indian', description: 'Curries, complex spice blends' },
+                    { value: 'middle_eastern', label: '🥙 Middle Eastern', description: 'Hummus, falafel, Mediterranean' },
+                    { value: 'american_comfort', label: '🍖 American Comfort', description: 'Classic hearty American meals' },
+                    { value: 'french', label: '🥐 French', description: 'Classic French cooking techniques' },
+                    { value: 'british', label: '☕ British', description: 'Traditional British fare' },
+                    { value: 'greek', label: '🫒 Greek', description: 'Fresh, Mediterranean, olive oil' },
+                    { value: 'healthy_fresh', label: '🥗 Healthy & Fresh', description: 'Salads, grilled foods, clean eating' },
+                    { value: 'spicy', label: '🌶️ Spicy Food', description: 'Heat and bold flavors' },
+                    { value: 'mild_simple', label: '🧂 Mild & Simple', description: 'Not too complex or exotic' },
+                    { value: 'sweet_savory', label: '🍯 Sweet & Savory', description: 'Like mixing sweet and savory' },
+                    { value: 'barbecue', label: '🔥 BBQ/Grilled', description: 'Smoky, grilled flavors' },
+                    { value: 'eat_anything', label: '🌍 I\'ll Eat Anything!', description: 'Adventurous eater, try anything' }
+                ],
+                field: 'flavor_preferences',
+                allow_text: true,
+                text_placeholder: "Or describe your flavor preferences..."
+            },
+            {
+                id: 'planning_intro',
+                type: 'system_message',
+                message: "Excellent! Finally, let's talk about your planning style. How do you like to organize and approach meal planning?",
+                delay: 1500
+            },
+            {
+                id: 'planning_style',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'detailed_lists', label: '📋 Detailed Lists', description: 'Love comprehensive plans and shopping lists' },
+                    { value: 'flexible_framework', label: '🎯 Flexible Framework', description: 'Some structure but room for spontaneity' },
+                    { value: 'wing_it', label: '🎲 Wing It', description: 'Prefer to be spontaneous with food' },
+                    { value: 'batch_prep', label: '📦 Batch Prep', description: 'Cook large quantities on weekends' },
+                    { value: 'daily_fresh', label: '🌱 Daily Fresh', description: 'Prefer to cook fresh each day' },
+                    { value: 'theme_nights', label: '🎭 Theme Nights', description: 'Taco Tuesday, Pizza Friday, etc.' },
+                    { value: 'seasonal_eating', label: '🍂 Seasonal Eating', description: 'Plan around seasons and fresh produce' },
+                    { value: 'budget_first', label: '💰 Budget-First', description: 'Plan based on sales and budget' },
+                    { value: 'health_focused', label: '🏃 Health-Focused', description: 'Nutrition is the primary concern' },
+                    { value: 'minimal_effort', label: '😌 Minimal Effort', description: 'Simplest approach possible' }
+                ],
+                field: 'planning_style',
+                allow_text: true,
+                text_placeholder: "Or describe your planning approach..."
+            },
+            {
+                id: 'additional_context_intro',
+                type: 'system_message',
+                message: "Perfect! Is there anything else you'd like me to know about your food preferences, cooking situation, or what you're hoping to achieve? Any special circumstances I should consider?",
+                delay: 1500
+            },
+            {
+                id: 'additional_context',
+                type: 'text_input',
+                placeholder: "e.g., I work night shifts, I'm pregnant, I have a tiny kitchen, I want to impress my partner, I'm trying to lose weight, etc...",
+                field: 'additional_context',
+                validation: 'optional'
+            },
+            {
+                id: 'completion',
+                type: 'system_message',
+                message: "Fantastic! That's all I need to create a personalized meal planning system that actually works for your life. Let me process all this information and set up your account...",
+                delay: 2000
+            }
+        ];
+
+        // Current onboarding flow (will be populated dynamically)
+        let onboardingFlow = [];
+
+        // Initialize the application
+        function initializeApp() {
+            // Generate the onboarding flow (this would be dynamic based on responses)
+            onboardingFlow = [...onboardingFlowTemplate];
+            updateProgress();
+            showNextStep();
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const totalSteps = onboardingFlow.length;
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('current-step').textContent = currentStep + 1;
+            document.getElementById('total-steps').textContent = totalSteps;
+        }
+
+        // Show next step in conversation
+        function showNextStep() {
+            if (currentStep >= onboardingFlow.length) {
+                completeOnboarding();
+                return;
+            }
+
+            const step = onboardingFlow[currentStep];
+            
+            if (step.type === 'system_message') {
+                showSystemMessage(step.message, step.delay || 1000);
+            } else if (step.type === 'adaptive_message') {
+                const message = step.generateMessage();
+                showSystemMessage(message, step.delay || 1000);
+            } else {
+                showInputStep(step);
+            }
+        }
+
+        // Show system message with typing effect
+        function showSystemMessage(message, delay) {
+            const chatContainer = document.getElementById('chat-container');
+            
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'flex items-start space-x-3 fade-in';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+                <div class="message-bubble bg-gray-100 p-3 rounded-lg">
+                    <div class="typing-indicator">Typing...</div>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Replace with actual message after delay
+            setTimeout(() => {
+                typingDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+                    <div class="message-bubble bg-gray-100 p-3 rounded-lg">
+                        <p class="text-gray-800">${message}</p>
+                    </div>
+                `;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // Move to next step
+                currentStep++;
+                updateProgress();
+                setTimeout(showNextStep, 500);
+            }, delay);
+        }
+
+        // Show input step
+        function showInputStep(step) {
+            const inputArea = document.getElementById('input-area');
+            
+            if (step.type === 'text_input') {
+                inputArea.innerHTML = `
+                    <div class="space-y-3">
+                        <textarea 
+                            id="text-input" 
+                            placeholder="${step.placeholder}" 
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            rows="3"
+                        ></textarea>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Share as much or as little as you'd like</span>
+                            <button 
+                                onclick="submitTextInput('${step.field}', ${step.validation === 'required'})"
+                                class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Focus on input
+                setTimeout(() => {
+                    document.getElementById('text-input').focus();
+                }, 100);
+                
+                // Add enter key handler
+                document.getElementById('text-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        submitTextInput(step.field, step.validation === 'required');
+                    }
+                });
+                
+            } else if (step.type === 'quick_select_plus') {
+                const optionsHtml = step.options.map(option => `
+                    <button 
+                        onclick="toggleQuickSelect('${option.value}', this)"
+                        class="quick-select-btn text-left p-3 border border-gray-300 rounded-lg hover:border-blue-500 transition"
+                        data-value="${option.value}"
+                    >
+                        <div class="font-medium">${option.label}</div>
+                        <div class="text-sm text-gray-600">${option.description}</div>
+                    </button>
+                `).join('');
+                
+                inputArea.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+                            ${optionsHtml}
+                        </div>
+                        ${step.allow_text ? `
+                            <div class="border-t pt-4">
+                                <textarea 
+                                    id="additional-text" 
+                                    placeholder="${step.text_placeholder}" 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    rows="2"
+                                ></textarea>
+                            </div>
+                        ` : ''}
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Select all that apply</span>
+                            <button 
+                                onclick="submitQuickSelect('${step.field}')"
+                                class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Handle quick select toggle
+        function toggleQuickSelect(value, button) {
+            button.classList.toggle('selected');
+            
+            // Special handling for mutually exclusive options
+            if (value === 'none' || value === 'no_restrictions' || value === 'no_issues' || value === 'no_dislikes') {
+                if (button.classList.contains('selected')) {
+                    document.querySelectorAll('.quick-select-btn').forEach(btn => {
+                        if (btn !== button) {
+                            btn.classList.remove('selected');
+                        }
+                    });
+                }
+            } else {
+                // If other option selected, deselect "none" type options
+                document.querySelectorAll('.quick-select-btn').forEach(btn => {
+                    const val = btn.dataset.value;
+                    if (val === 'none' || val === 'no_restrictions' || val === 'no_issues' || val === 'no_dislikes') {
+                        btn.classList.remove('selected');
+                    }
+                });
+            }
+        }
+
+        // Submit text input
+        function submitTextInput(field, required) {
+            const input = document.getElementById('text-input');
+            const value = input.value.trim();
+            
+            if (required && !value) {
+                alert('Please provide a response to continue.');
+                return;
+            }
+            
+            // Add user message to chat
+            addUserMessage(value || 'Skipped');
+            
+            // Store response and analyze it
+            responses[field] = value;
+            const analysis = OnboardingAI.analyzeResponse(field, value);
+            
+            // Move to next step
+            currentStep++;
+            updateProgress();
+            setTimeout(showNextStep, 500);
+        }
+
+        // Submit quick select
+        function submitQuickSelect(field) {
+            const selectedOptions = [];
+            document.querySelectorAll('.quick-select-btn.selected').forEach(btn => {
+                selectedOptions.push(btn.dataset.value);
+            });
+            
+            const additionalText = document.getElementById('additional-text')?.value.trim() || '';
+            
+            let response = '';
+            if (selectedOptions.length > 0) {
+                response = selectedOptions.join(', ');
+            }
+            if (additionalText) {
+                response += (response ? ' | ' : '') + additionalText;
+            }
+            
+            // Add user message to chat
+            addUserMessage(response || 'None selected');
+            
+            // Store response and analyze it
+            responses[field] = response;
+            const analysis = OnboardingAI.analyzeResponse(field, response);
+            
+            // Move to next step
+            currentStep++;
+            updateProgress();
+            setTimeout(showNextStep, 500);
+        }
+
+        // Add user message to chat
+        function addUserMessage(message) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-3 justify-end fade-in';
+            messageDiv.innerHTML = `
+                <div class="message-bubble bg-blue-500 text-white p-3 rounded-lg">
+                    <p>${message}</p>
+                </div>
+                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-sm">👤</div>
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Clear input area
+            document.getElementById('input-area').innerHTML = '';
+            
+            // Update debug info
+            updateDebugInfo();
+        }
+
+        // Complete onboarding
+        function completeOnboarding() {
+            const chatContainer = document.getElementById('chat-container');
+            const inputArea = document.getElementById('input-area');
+            
+            // Generate final AI response based on all collected data
+            const finalInsights = OnboardingAI.generateAdaptiveResponse(responses);
+            
+            // Show completion message
+            const completionDiv = document.createElement('div');
+            completionDiv.className = 'flex items-start space-x-3 fade-in';
+            completionDiv.innerHTML = `
+                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✅</div>
+                <div class="message-bubble bg-green-100 p-4 rounded-lg">
+                    <p class="text-green-800 font-medium">Onboarding Complete!</p>
+                    <p class="text-green-700 text-sm mt-1">Your personalized meal planning system is ready. Based on your responses, I've identified key patterns in your cooking style and preferences.</p>
+                    ${finalInsights ? `<p class="text-green-700 text-sm mt-2"><strong>Key insight:</strong> ${finalInsights}</p>` : ''}
+                </div>
+            `;
+            chatContainer.appendChild(completionDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Show completion actions
+            inputArea.innerHTML = `
+                <div class="flex justify-center space-x-4">
+                    <button 
+                        onclick="exportResponses()"
+                        class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
+                    >
+                        Export Responses
+                    </button>
+                    <button 
+                        onclick="resetOnboarding()"
+                        class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition"
+                    >
+                        Start Over
+                    </button>
+                </div>
+            `;
+            
+            // Update progress to 100%
+            document.getElementById('progress-bar').style.width = '100%';
+            
+            // Final debug update
+            updateDebugInfo();
+        }
+
+        // Export responses
+        function exportResponses() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                responses: responses,
+                userProfile: userProfile,
+                metadata: {
+                    completion_time: Date.now(),
+                    total_steps: onboardingFlow.length
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'onboarding-responses-v2.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Reset onboarding
+        function resetOnboarding() {
+            if (confirm('Are you sure you want to start over?')) {
+                currentStep = 0;
+                responses = {};
+                userProfile = {};
+                document.getElementById('chat-container').innerHTML = '';
+                document.getElementById('input-area').innerHTML = '';
+                initializeApp();
+            }
+        }
+
+        // Update debug info
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML = `
+Current Step: ${currentStep}/${onboardingFlow.length}
+Progress: ${Math.round((currentStep / onboardingFlow.length) * 100)}%
+
+AI Analysis & Insights:
+${JSON.stringify(userProfile.insights || [], null, 2)}
+
+User Responses:
+${JSON.stringify(responses, null, 2)}
+
+User Profile Built by AI:
+${JSON.stringify(userProfile, null, 2)}
+            `;
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', initializeApp);
+    </script>
+</body>
+</html>

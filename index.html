@@ -31,6 +31,7 @@
     
     <!-- Load our API layer and bug reporting system -->
     <script src="js/api.js?v=3"></script>
+    <script src="js/onboarding-debug.js?v=1"></script>
     <script src="js/bug-report.js"></script>
     <style>
     @keyframes pulse {
@@ -4533,15 +4534,16 @@ These suggestions consider your cooking level, dietary needs, flavor preferences
                     return;
                 }
 
-                console.log('☁️ Saving to Supabase...');
-                const result = await window.mealPlannerAPI.updateUserProfile(profileData);
-                console.log('✅ Profile saved successfully:', result);
+                console.log('☁️ Starting transactional onboarding completion...');
                 
-                // Set completion flag to prevent restart
-                onboardingCompleted = true;
+                // Use new transactional API with retry logic
+                const result = await window.mealPlannerAPI.retryOnboardingCompletion(profileData);
+                console.log('✅ Onboarding transaction completed:', result);
                 
                 // Generate personalized meal plan based on user responses
+                let mealPlanSuccess = false;
                 try {
+                    console.log('🍽️ Generating personalized meal plan...');
                     const mealSuggestions = generateMealSuggestions({
                         breakfast: responses[10]?.answer || 'Light breakfast',
                         cuisine: responses[8]?.answer || 'Mixed cuisine',
@@ -4570,19 +4572,25 @@ These suggestions consider your cooking level, dietary needs, flavor preferences
                     
                     await window.mealPlannerAPI.saveMealPlan(personalizedPlan);
                     console.log('✅ Personalized meal plan generated and saved');
+                    mealPlanSuccess = true;
                 } catch (mealPlanError) {
                     console.error('❌ Error generating meal plan:', mealPlanError);
+                    // Don't fail onboarding for meal plan issues
                 }
                 
-                // Wait a moment for database consistency then verify save
-                setTimeout(async () => {
-                    try {
-                        const savedProfile = await window.mealPlannerAPI.getUserProfile();
-                        console.log('🔍 Verification - saved profile:', savedProfile);
-                    } catch (e) {
-                        console.log('⚠️ Could not verify profile save:', e);
-                    }
-                }, 500);
+                // Final verification that everything is saved correctly
+                console.log('🔍 Verifying onboarding completion...');
+                const verification = await window.mealPlannerAPI.verifyOnboardingComplete();
+                if (!verification.success) {
+                    console.error('❌ Onboarding verification failed:', verification.error);
+                    throw new Error('Onboarding completion verification failed');
+                }
+                
+                console.log('✅ Onboarding completion verified successfully');
+                
+                // ONLY set completion flag after ALL operations are successful
+                onboardingCompleted = true;
+                sessionStorage.setItem('onboardingCompleted', 'true');
                 
                 // Hide onboarding modal
                 document.getElementById('onboarding-modal').classList.add('hidden');
@@ -4600,7 +4608,34 @@ These suggestions consider your cooking level, dietary needs, flavor preferences
                 console.error('❌ Error completing onboarding:', error);
                 console.error('Error details:', error.message, error.stack);
                 
-                // Fallback to localStorage if Supabase fails
+                // Try recovery first before falling back to localStorage
+                try {
+                    console.log('🔄 Attempting onboarding recovery...');
+                    const recovery = await window.mealPlannerAPI.recoverIncompleteOnboarding();
+                    
+                    if (recovery.success) {
+                        console.log('✅ Recovery successful, verifying...');
+                        const verification = await window.mealPlannerAPI.verifyOnboardingComplete();
+                        
+                        if (verification.success) {
+                            console.log('✅ Recovery verified, onboarding is complete');
+                            onboardingCompleted = true;
+                            sessionStorage.setItem('onboardingCompleted', 'true');
+                            
+                            document.getElementById('onboarding-modal').classList.add('hidden');
+                            showOnboardingComplete();
+                            setTimeout(() => {
+                                hideAuthGate();
+                                switchTab('planner');
+                            }, 2000);
+                            return;
+                        }
+                    }
+                } catch (recoveryError) {
+                    console.error('❌ Recovery failed:', recoveryError);
+                }
+                
+                // Fallback to localStorage if recovery fails
                 try {
                     console.log('🔄 Falling back to localStorage...');
                     const responses = userOnboardingData.responses;
@@ -4628,8 +4663,9 @@ These suggestions consider your cooking level, dietary needs, flavor preferences
                     localStorage.setItem('userProfile', JSON.stringify(profileData));
                     console.log('✅ Saved to localStorage as fallback');
                     
-                    // Set completion flag to prevent restart
+                    // ONLY set completion flag after successful save
                     onboardingCompleted = true;
+                    sessionStorage.setItem('onboardingCompleted', 'true');
                     
                     // Hide onboarding modal
                     document.getElementById('onboarding-modal').classList.add('hidden');

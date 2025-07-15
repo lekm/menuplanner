@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Planner - Onboarding Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .typing-indicator {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .quick-select-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .quick-select-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .quick-select-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-4xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-semibold text-gray-800">🍽️ Meal Planner Setup</h1>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600">
+                        Step <span id="current-step">1</span> of <span id="total-steps">8</span>
+                    </div>
+                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                        <div id="progress-bar" class="progress-bar h-2 rounded-full" style="width: 12.5%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Container -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Chat Messages -->
+            <div id="chat-container" class="h-96 overflow-y-auto p-6 space-y-4">
+                <!-- Messages will be populated here -->
+            </div>
+            
+            <!-- Input Area -->
+            <div id="input-area" class="border-t bg-gray-50 p-4">
+                <!-- Input will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Debug Panel -->
+        <div class="mt-6 bg-white rounded-lg shadow-lg p-4">
+            <details>
+                <summary class="cursor-pointer text-sm font-medium text-gray-700 mb-2">🔍 Debug Info</summary>
+                <div id="debug-info" class="text-xs text-gray-600 bg-gray-50 p-3 rounded font-mono">
+                    <!-- Debug info will be populated here -->
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        // Onboarding conversation flow
+        const onboardingFlow = [
+            {
+                id: 'welcome',
+                type: 'system_message',
+                message: "Hi! I'm excited to help you create a meal planning system that actually works for your life. This will take about 5-10 minutes, and I'll ask you some questions to understand your cooking style, preferences, and what you're hoping to achieve.",
+                delay: 1000
+            },
+            {
+                id: 'start_question',
+                type: 'system_message',
+                message: "Let's start with the basics - tell me a bit about your age and living situation? This helps me understand your cooking context.",
+                delay: 2000
+            },
+            {
+                id: 'age_living',
+                type: 'text_input',
+                placeholder: "e.g., I'm 28 and live in a shared flat with flatmates...",
+                field: 'age_living_situation',
+                validation: 'required'
+            },
+            {
+                id: 'accessibility_intro',
+                type: 'system_message',
+                message: "Got it! Now, I want to make sure this system works for everyone. Do any of these situations apply to you? (You can select multiple or add your own)",
+                delay: 1500
+            },
+            {
+                id: 'accessibility',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'adhd', label: '🧠 ADHD', description: 'Need systems that work with ADHD brain' },
+                    { value: 'depression', label: '💙 Depression/Anxiety', description: 'Low energy days are common' },
+                    { value: 'chronic_fatigue', label: '😴 Chronic Fatigue', description: 'Energy levels vary significantly' },
+                    { value: 'physical_limitations', label: '🦽 Physical Limitations', description: 'Mobility or dexterity considerations' },
+                    { value: 'time_constraints', label: '⏰ Severe Time Constraints', description: 'Extremely busy schedule' },
+                    { value: 'none', label: '✅ None of these apply', description: 'No specific accessibility needs' }
+                ],
+                field: 'accessibility_needs',
+                allow_text: true,
+                text_placeholder: "Or describe your situation in your own words..."
+            },
+            {
+                id: 'cooking_background_intro',
+                type: 'system_message',
+                message: "Thank you for sharing that - it's really helpful to know. I'll make sure to suggest strategies that work for your situation. Now, tell me about your relationship with cooking...",
+                delay: 2000
+            },
+            {
+                id: 'cooking_background',
+                type: 'text_input',
+                placeholder: "e.g., I'm a confident cook but struggle with meal planning, or I'm a beginner who wants to learn...",
+                field: 'cooking_background',
+                validation: 'required'
+            },
+            {
+                id: 'goals_intro',
+                type: 'system_message',
+                message: "That's great context! Now, what are you hoping to achieve with meal planning? What challenges are you trying to solve?",
+                delay: 1500
+            },
+            {
+                id: 'goals',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'save_money', label: '💰 Save Money', description: 'Reduce food costs and waste' },
+                    { value: 'eat_healthier', label: '🥗 Eat Healthier', description: 'Improve nutrition and diet' },
+                    { value: 'save_time', label: '⏱️ Save Time', description: 'Reduce daily decision fatigue' },
+                    { value: 'reduce_stress', label: '😌 Reduce Stress', description: 'Less "what\'s for dinner?" panic' },
+                    { value: 'stop_takeout', label: '🍕 Stop Ordering Takeout', description: 'Cook more at home' },
+                    { value: 'learn_cooking', label: '👨‍🍳 Learn to Cook', description: 'Improve cooking skills' },
+                    { value: 'meal_prep', label: '📦 Better Meal Prep', description: 'Batch cooking and prep' }
+                ],
+                field: 'goals_challenges',
+                allow_text: true,
+                text_placeholder: "Or describe your goals in your own words..."
+            },
+            {
+                id: 'kitchen_intro',
+                type: 'system_message',
+                message: "Perfect! Those are great goals. Now let's talk about your kitchen setup. What equipment do you have access to?",
+                delay: 1500
+            },
+            {
+                id: 'kitchen_equipment',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'basic_tools', label: '🔪 Basic Tools', description: 'Knives, cutting board, pots, pans' },
+                    { value: 'stand_mixer', label: '🍞 Stand Mixer', description: 'For baking and mixing' },
+                    { value: 'food_processor', label: '⚡ Food Processor', description: 'For chopping and processing' },
+                    { value: 'instant_pot', label: '🍲 Instant Pot/Pressure Cooker', description: 'For quick cooking' },
+                    { value: 'cast_iron', label: '🍳 Cast Iron', description: 'For high-heat cooking' },
+                    { value: 'air_fryer', label: '🌪️ Air Fryer', description: 'For crispy foods' },
+                    { value: 'slow_cooker', label: '🐌 Slow Cooker', description: 'For set-and-forget meals' },
+                    { value: 'limited_kitchen', label: '🏠 Limited Kitchen', description: 'Basic setup, shared space' }
+                ],
+                field: 'kitchen_equipment',
+                allow_text: true,
+                text_placeholder: "Or describe your kitchen setup..."
+            },
+            {
+                id: 'schedule_intro',
+                type: 'system_message',
+                message: "Got it! Kitchen setup is important for the right recommendations. Now, tell me about your schedule and energy patterns throughout the week...",
+                delay: 1500
+            },
+            {
+                id: 'schedule_energy',
+                type: 'text_input',
+                placeholder: "e.g., High energy mornings, dead tired after work, weekends are my cooking time...",
+                field: 'schedule_energy',
+                validation: 'required'
+            },
+            {
+                id: 'preferences_intro',
+                type: 'system_message',
+                message: "That's really helpful for timing suggestions! Finally, what kinds of flavors and cuisines do you enjoy?",
+                delay: 1500
+            },
+            {
+                id: 'flavor_preferences',
+                type: 'quick_select_plus',
+                options: [
+                    { value: 'italian', label: '🍝 Italian', description: 'Pasta, pizza, Mediterranean' },
+                    { value: 'asian', label: '🍜 Asian', description: 'Stir-fries, noodles, rice dishes' },
+                    { value: 'mexican', label: '🌮 Mexican', description: 'Tacos, burritos, spicy food' },
+                    { value: 'indian', label: '🍛 Indian', description: 'Curries, spices, complex flavors' },
+                    { value: 'comfort_food', label: '🍖 Comfort Food', description: 'Classic hearty meals' },
+                    { value: 'healthy_fresh', label: '🥗 Healthy & Fresh', description: 'Salads, grilled foods, clean eating' },
+                    { value: 'spicy', label: '🌶️ Spicy Food', description: 'Heat and bold flavors' },
+                    { value: 'simple_flavors', label: '🧂 Simple Flavors', description: 'Not too complex or exotic' }
+                ],
+                field: 'flavor_preferences',
+                allow_text: true,
+                text_placeholder: "Or describe your flavor preferences..."
+            },
+            {
+                id: 'completion',
+                type: 'system_message',
+                message: "Perfect! That's all I need to create a personalized meal planning system for you. Let me process this information and set up your account...",
+                delay: 2000
+            }
+        ];
+
+        // Application state
+        let currentStep = 0;
+        let responses = {};
+        let isProcessing = false;
+
+        // Initialize the application
+        function initializeApp() {
+            updateProgress();
+            showNextStep();
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = (currentStep / onboardingFlow.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('current-step').textContent = currentStep + 1;
+            document.getElementById('total-steps').textContent = onboardingFlow.length;
+        }
+
+        // Show next step in conversation
+        function showNextStep() {
+            if (currentStep >= onboardingFlow.length) {
+                completeOnboarding();
+                return;
+            }
+
+            const step = onboardingFlow[currentStep];
+            
+            if (step.type === 'system_message') {
+                showSystemMessage(step.message, step.delay || 1000);
+            } else {
+                showInputStep(step);
+            }
+        }
+
+        // Show system message with typing effect
+        function showSystemMessage(message, delay) {
+            const chatContainer = document.getElementById('chat-container');
+            
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'flex items-start space-x-3 fade-in';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+                <div class="message-bubble bg-gray-100 p-3 rounded-lg">
+                    <div class="typing-indicator">Typing...</div>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Replace with actual message after delay
+            setTimeout(() => {
+                typingDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+                    <div class="message-bubble bg-gray-100 p-3 rounded-lg">
+                        <p class="text-gray-800">${message}</p>
+                    </div>
+                `;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // Move to next step
+                currentStep++;
+                updateProgress();
+                setTimeout(showNextStep, 500);
+            }, delay);
+        }
+
+        // Show input step
+        function showInputStep(step) {
+            const inputArea = document.getElementById('input-area');
+            
+            if (step.type === 'text_input') {
+                inputArea.innerHTML = `
+                    <div class="space-y-3">
+                        <textarea 
+                            id="text-input" 
+                            placeholder="${step.placeholder}" 
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            rows="3"
+                        ></textarea>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Share as much or as little as you'd like</span>
+                            <button 
+                                onclick="submitTextInput('${step.field}', ${step.validation === 'required'})"
+                                class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Focus on input
+                setTimeout(() => {
+                    document.getElementById('text-input').focus();
+                }, 100);
+                
+                // Add enter key handler
+                document.getElementById('text-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        submitTextInput(step.field, step.validation === 'required');
+                    }
+                });
+                
+            } else if (step.type === 'quick_select_plus') {
+                const optionsHtml = step.options.map(option => `
+                    <button 
+                        onclick="toggleQuickSelect('${option.value}', this)"
+                        class="quick-select-btn text-left p-3 border border-gray-300 rounded-lg hover:border-blue-500 transition"
+                        data-value="${option.value}"
+                    >
+                        <div class="font-medium">${option.label}</div>
+                        <div class="text-sm text-gray-600">${option.description}</div>
+                    </button>
+                `).join('');
+                
+                inputArea.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${optionsHtml}
+                        </div>
+                        ${step.allow_text ? `
+                            <div class="border-t pt-4">
+                                <textarea 
+                                    id="additional-text" 
+                                    placeholder="${step.text_placeholder}" 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    rows="2"
+                                ></textarea>
+                            </div>
+                        ` : ''}
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Select all that apply</span>
+                            <button 
+                                onclick="submitQuickSelect('${step.field}')"
+                                class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Handle quick select toggle
+        function toggleQuickSelect(value, button) {
+            button.classList.toggle('selected');
+            
+            // If "none" is selected, deselect others
+            if (value === 'none' && button.classList.contains('selected')) {
+                document.querySelectorAll('.quick-select-btn').forEach(btn => {
+                    if (btn !== button) {
+                        btn.classList.remove('selected');
+                    }
+                });
+            } else if (value !== 'none') {
+                // If other option selected, deselect "none"
+                document.querySelectorAll('.quick-select-btn[data-value="none"]').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+            }
+        }
+
+        // Submit text input
+        function submitTextInput(field, required) {
+            const input = document.getElementById('text-input');
+            const value = input.value.trim();
+            
+            if (required && !value) {
+                alert('Please provide a response to continue.');
+                return;
+            }
+            
+            // Add user message to chat
+            addUserMessage(value || 'Skipped');
+            
+            // Store response
+            responses[field] = value;
+            
+            // Move to next step
+            currentStep++;
+            updateProgress();
+            setTimeout(showNextStep, 500);
+        }
+
+        // Submit quick select
+        function submitQuickSelect(field) {
+            const selectedOptions = [];
+            document.querySelectorAll('.quick-select-btn.selected').forEach(btn => {
+                selectedOptions.push(btn.dataset.value);
+            });
+            
+            const additionalText = document.getElementById('additional-text')?.value.trim() || '';
+            
+            let response = '';
+            if (selectedOptions.length > 0) {
+                response = selectedOptions.join(', ');
+            }
+            if (additionalText) {
+                response += (response ? ' | ' : '') + additionalText;
+            }
+            
+            // Add user message to chat
+            addUserMessage(response || 'None selected');
+            
+            // Store response
+            responses[field] = response;
+            
+            // Move to next step
+            currentStep++;
+            updateProgress();
+            setTimeout(showNextStep, 500);
+        }
+
+        // Add user message to chat
+        function addUserMessage(message) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-3 justify-end fade-in';
+            messageDiv.innerHTML = `
+                <div class="message-bubble bg-blue-500 text-white p-3 rounded-lg">
+                    <p>${message}</p>
+                </div>
+                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-sm">👤</div>
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Clear input area
+            document.getElementById('input-area').innerHTML = '';
+            
+            // Update debug info
+            updateDebugInfo();
+        }
+
+        // Complete onboarding
+        function completeOnboarding() {
+            const chatContainer = document.getElementById('chat-container');
+            const inputArea = document.getElementById('input-area');
+            
+            // Show completion message
+            const completionDiv = document.createElement('div');
+            completionDiv.className = 'flex items-start space-x-3 fade-in';
+            completionDiv.innerHTML = `
+                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✅</div>
+                <div class="message-bubble bg-green-100 p-4 rounded-lg">
+                    <p class="text-green-800 font-medium">Onboarding Complete!</p>
+                    <p class="text-green-700 text-sm mt-1">Your personalized meal planning system is ready. Check the debug panel below to see your responses.</p>
+                </div>
+            `;
+            chatContainer.appendChild(completionDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Show completion actions
+            inputArea.innerHTML = `
+                <div class="flex justify-center space-x-4">
+                    <button 
+                        onclick="exportResponses()"
+                        class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
+                    >
+                        Export Responses
+                    </button>
+                    <button 
+                        onclick="resetOnboarding()"
+                        class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition"
+                    >
+                        Start Over
+                    </button>
+                </div>
+            `;
+            
+            // Update progress to 100%
+            document.getElementById('progress-bar').style.width = '100%';
+            
+            // Final debug update
+            updateDebugInfo();
+        }
+
+        // Export responses
+        function exportResponses() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                responses: responses,
+                metadata: {
+                    completion_time: Date.now(),
+                    total_steps: onboardingFlow.length
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'onboarding-responses.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Reset onboarding
+        function resetOnboarding() {
+            if (confirm('Are you sure you want to start over?')) {
+                currentStep = 0;
+                responses = {};
+                document.getElementById('chat-container').innerHTML = '';
+                document.getElementById('input-area').innerHTML = '';
+                initializeApp();
+            }
+        }
+
+        // Update debug info
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML = `
+Current Step: ${currentStep}/${onboardingFlow.length}
+Progress: ${Math.round((currentStep / onboardingFlow.length) * 100)}%
+
+Responses:
+${JSON.stringify(responses, null, 2)}
+            `;
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', initializeApp);
+    </script>
+</body>
+</html>

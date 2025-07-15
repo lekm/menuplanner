@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding System Plan Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease-in-out;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="w-full max-w-6xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="gradient-bg rounded-lg p-8 mb-8 text-white">
+            <h1 class="text-4xl font-bold mb-4">🍽️ Meal Planner Onboarding System</h1>
+            <p class="text-lg opacity-90">Review the proposed onboarding system architecture and provide your feedback</p>
+            <div class="mt-4 flex items-center space-x-4">
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">Version 1.0</span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">Created by Claude</span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">Ready for Review</span>
+            </div>
+        </div>
+
+        <!-- System Overview -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">📋 System Overview</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold text-blue-900 mb-3">🎯 Current Goal</h3>
+                    <p class="text-blue-800">Transform anonymous visitors into fully onboarded users with personalized meal planning through a 12-step conversational questionnaire.</p>
+                </div>
+                
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold text-green-900 mb-3">🏗️ System Status</h3>
+                    <p class="text-green-800">Functional but fragile - works in happy path scenarios but has race conditions and data consistency issues.</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">🔄 User Journey Flow</h3>
+                <div class="flex items-center space-x-2 overflow-x-auto pb-4">
+                    <div class="bg-red-100 text-red-800 px-4 py-2 rounded-lg whitespace-nowrap">Anonymous User</div>
+                    <div class="text-gray-400">→</div>
+                    <div class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg whitespace-nowrap">Authentication</div>
+                    <div class="text-gray-400">→</div>
+                    <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg whitespace-nowrap">12-Step Onboarding</div>
+                    <div class="text-gray-400">→</div>
+                    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg whitespace-nowrap">Onboarded User</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Features -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">✨ Key Features</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-purple-50 p-6 rounded-lg card-hover">
+                    <h3 class="text-lg font-semibold text-purple-900 mb-2">🔐 Multi-modal Auth</h3>
+                    <p class="text-purple-800 text-sm">Email/password, Google OAuth, GitHub OAuth</p>
+                </div>
+                
+                <div class="bg-indigo-50 p-6 rounded-lg card-hover">
+                    <h3 class="text-lg font-semibold text-indigo-900 mb-2">💬 Conversational UX</h3>
+                    <p class="text-indigo-800 text-sm">AI-like interaction with progressive disclosure</p>
+                </div>
+                
+                <div class="bg-teal-50 p-6 rounded-lg card-hover">
+                    <h3 class="text-lg font-semibold text-teal-900 mb-2">🔄 Transactional Completion</h3>
+                    <p class="text-teal-800 text-sm">Retry logic and verification with error recovery</p>
+                </div>
+                
+                <div class="bg-orange-50 p-6 rounded-lg card-hover">
+                    <h3 class="text-lg font-semibold text-orange-900 mb-2">📱 Graceful Degradation</h3>
+                    <p class="text-orange-800 text-sm">localStorage fallback when cloud unavailable</p>
+                </div>
+                
+                <div class="bg-pink-50 p-6 rounded-lg card-hover">
+                    <h3 class="text-lg font-semibold text-pink-900 mb-2">🛠️ Error Recovery</h3>
+                    <p class="text-pink-800 text-sm">Database-level healing functions and monitoring</p>
+                </div>
+                
+                <div class="bg-cyan-50 p-6 rounded-lg card-hover">
+                    <h3 class="text-lg font-semibold text-cyan-900 mb-2">📊 12-Step Process</h3>
+                    <p class="text-cyan-800 text-sm">Age, accessibility, cooking, dietary, equipment, etc.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Implementation Phases -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">📅 Implementation Roadmap</h2>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-red-500 pl-6">
+                    <h3 class="text-lg font-semibold text-red-700">Phase 1: Foundation Stabilization (Weeks 1-2)</h3>
+                    <p class="text-gray-600 text-sm">Fix database schema, resolve race conditions, enhance error handling</p>
+                </div>
+                
+                <div class="border-l-4 border-yellow-500 pl-6">
+                    <h3 class="text-lg font-semibold text-yellow-700">Phase 2: User Experience Enhancement (Weeks 3-4)</h3>
+                    <p class="text-gray-600 text-sm">Optimize conversation flow, improve UI/UX, performance optimization</p>
+                </div>
+                
+                <div class="border-l-4 border-blue-500 pl-6">
+                    <h3 class="text-lg font-semibold text-blue-700">Phase 3: Advanced Features (Weeks 5-6)</h3>
+                    <p class="text-gray-600 text-sm">Advanced recovery, analytics & monitoring, A/B testing framework</p>
+                </div>
+                
+                <div class="border-l-4 border-green-500 pl-6">
+                    <h3 class="text-lg font-semibold text-green-700">Phase 4: Scale & Optimization (Weeks 7-8)</h3>
+                    <p class="text-gray-600 text-sm">Scalability improvements, maintainability, security hardening</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Form -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">📝 Your Feedback</h2>
+            <p class="text-gray-600 mb-8">Please review the proposed onboarding system and provide your thoughts on the following questions:</p>
+            
+            <form id="feedbackForm" class="space-y-8">
+                <!-- Section 1: Overall Vision -->
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-blue-900 mb-4">🎯 Overall Vision & Direction</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">1. How well does this onboarding system align with your vision for the meal planner?</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="vision_alignment" value="excellent" class="mr-2">
+                                    <span>Excellent alignment</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="vision_alignment" value="good" class="mr-2">
+                                    <span>Good alignment</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="vision_alignment" value="needs_adjustment" class="mr-2">
+                                    <span>Needs adjustment</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="vision_alignment" value="major_changes" class="mr-2">
+                                    <span>Major changes needed</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">2. What aspects of the current plan excite you most?</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="exciting_aspects" value="conversational_ux" class="mr-2">
+                                    <span>Conversational UX</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="exciting_aspects" value="multi_auth" class="mr-2">
+                                    <span>Multi-modal Authentication</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="exciting_aspects" value="error_recovery" class="mr-2">
+                                    <span>Error Recovery System</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="exciting_aspects" value="personalization" class="mr-2">
+                                    <span>Deep Personalization</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="exciting_aspects" value="progressive_enhancement" class="mr-2">
+                                    <span>Progressive Enhancement</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="exciting_aspects" value="monitoring" class="mr-2">
+                                    <span>Monitoring & Analytics</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">3. What concerns you most about this approach?</label>
+                            <textarea name="main_concerns" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Share your main concerns about the proposed system..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: User Experience -->
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-green-900 mb-4">👤 User Experience</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">4. How do you feel about the 12-step conversational onboarding process?</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="onboarding_length" value="too_long" class="mr-2">
+                                    <span>Too long</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="onboarding_length" value="just_right" class="mr-2">
+                                    <span>Just right</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="onboarding_length" value="could_be_longer" class="mr-2">
+                                    <span>Could be longer</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="onboarding_length" value="depends_on_execution" class="mr-2">
+                                    <span>Depends on execution</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">5. Which onboarding questions are most important to you?</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="age_living" class="mr-2">
+                                    <span>Age/Living Situation</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="accessibility" class="mr-2">
+                                    <span>Accessibility Needs</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="cooking_background" class="mr-2">
+                                    <span>Cooking Background</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="dietary_needs" class="mr-2">
+                                    <span>Dietary Needs</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="equipment" class="mr-2">
+                                    <span>Kitchen Equipment</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="schedule" class="mr-2">
+                                    <span>Schedule/Energy</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="goals" class="mr-2">
+                                    <span>Goals/Challenges</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="skills" class="mr-2">
+                                    <span>Skills/Comfort</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="cuisines" class="mr-2">
+                                    <span>Cuisine Preferences</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="planning_style" class="mr-2">
+                                    <span>Planning Style</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_questions" value="breakfast" class="mr-2">
+                                    <span>Breakfast Preferences</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">6. How important is the "AI-like conversational" approach vs. traditional forms?</label>
+                            <input type="range" name="conversational_importance" min="1" max="5" value="3" class="w-full">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Traditional forms</span>
+                                <span>Neutral</span>
+                                <span>AI conversation essential</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">7. What would make the onboarding experience more engaging for you?</label>
+                            <textarea name="engagement_ideas" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Suggest ways to make onboarding more engaging..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Technical Implementation -->
+                <div class="bg-purple-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-purple-900 mb-4">⚙️ Technical Implementation</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">8. How critical is the offline/localStorage fallback functionality?</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="offline_priority" value="critical" class="mr-2">
+                                    <span>Critical</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="offline_priority" value="important" class="mr-2">
+                                    <span>Important</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="offline_priority" value="nice_to_have" class="mr-2">
+                                    <span>Nice to have</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="offline_priority" value="not_needed" class="mr-2">
+                                    <span>Not needed</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">9. Which authentication methods are most important to you?</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="auth_methods" value="email_password" class="mr-2">
+                                    <span>Email/Password</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="auth_methods" value="google_oauth" class="mr-2">
+                                    <span>Google OAuth</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="auth_methods" value="github_oauth" class="mr-2">
+                                    <span>GitHub OAuth</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="auth_methods" value="apple_oauth" class="mr-2">
+                                    <span>Apple OAuth (future)</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="auth_methods" value="guest_mode" class="mr-2">
+                                    <span>Guest/Anonymous Mode</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">10. How important is the database recovery/healing functionality?</label>
+                            <input type="range" name="recovery_importance" min="1" max="5" value="4" class="w-full">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Not important</span>
+                                <span>Somewhat important</span>
+                                <span>Very important</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">11. Any specific technical concerns or requirements?</label>
+                            <textarea name="technical_concerns" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Share any technical concerns or specific requirements..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Timeline & Priorities -->
+                <div class="bg-orange-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-orange-900 mb-4">⏰ Timeline & Priorities</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">12. How do you feel about the 8-week timeline?</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="timeline_opinion" value="too_long" class="mr-2">
+                                    <span>Too long</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="timeline_opinion" value="just_right" class="mr-2">
+                                    <span>Just right</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="timeline_opinion" value="too_short" class="mr-2">
+                                    <span>Too short</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="timeline_opinion" value="depends_on_quality" class="mr-2">
+                                    <span>Depends on quality</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">13. Which phase should be the highest priority?</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="priority_phase" value="phase1" class="mr-2">
+                                    <span>Phase 1: Foundation Stabilization</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="priority_phase" value="phase2" class="mr-2">
+                                    <span>Phase 2: User Experience Enhancement</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="priority_phase" value="phase3" class="mr-2">
+                                    <span>Phase 3: Advanced Features</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="priority_phase" value="phase4" class="mr-2">
+                                    <span>Phase 4: Scale & Optimization</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">14. What's your urgency level for fixing the current onboarding issues?</label>
+                            <input type="range" name="urgency_level" min="1" max="5" value="3" class="w-full">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Can wait</span>
+                                <span>Normal priority</span>
+                                <span>Urgent</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">15. Which features could be deprioritized or removed?</label>
+                            <textarea name="deprioritize_features" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="List any features that could be deprioritized or removed..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Success Metrics -->
+                <div class="bg-teal-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-teal-900 mb-4">📊 Success Metrics</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">16. What should be the target completion rate for onboarding?</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="completion_target" value="70%" class="mr-2">
+                                    <span>70%</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="completion_target" value="80%" class="mr-2">
+                                    <span>80%</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="completion_target" value="85%" class="mr-2">
+                                    <span>85%</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="completion_target" value="90%" class="mr-2">
+                                    <span>90%+</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">17. What's an acceptable completion time for onboarding?</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="completion_time" value="5min" class="mr-2">
+                                    <span>5 minutes</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="completion_time" value="10min" class="mr-2">
+                                    <span>10 minutes</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="completion_time" value="15min" class="mr-2">
+                                    <span>15 minutes</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="completion_time" value="depends" class="mr-2">
+                                    <span>Depends on quality</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">18. Which metrics matter most to you?</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_metrics" value="completion_rate" class="mr-2">
+                                    <span>Completion Rate</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_metrics" value="time_to_complete" class="mr-2">
+                                    <span>Time to Complete</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_metrics" value="error_rate" class="mr-2">
+                                    <span>Error Rate</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_metrics" value="user_satisfaction" class="mr-2">
+                                    <span>User Satisfaction</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_metrics" value="data_quality" class="mr-2">
+                                    <span>Data Quality</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_metrics" value="recovery_success" class="mr-2">
+                                    <span>Recovery Success</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_metrics" value="user_retention" class="mr-2">
+                                    <span>User Retention</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="important_metrics" value="meal_plan_usage" class="mr-2">
+                                    <span>Meal Plan Usage</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 6: Risk Assessment -->
+                <div class="bg-red-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-red-900 mb-4">⚠️ Risk Assessment</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">19. Which risks concern you most?</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="risk_concerns" value="database_corruption" class="mr-2">
+                                    <span>Database corruption/inconsistent states</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="risk_concerns" value="auth_failures" class="mr-2">
+                                    <span>Authentication failures</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="risk_concerns" value="data_loss" class="mr-2">
+                                    <span>Data loss during onboarding</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="risk_concerns" value="performance" class="mr-2">
+                                    <span>Performance degradation</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="risk_concerns" value="ui_ux" class="mr-2">
+                                    <span>Poor UI/UX experience</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="risk_concerns" value="third_party" class="mr-2">
+                                    <span>Third-party dependencies</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="risk_concerns" value="complexity" class="mr-2">
+                                    <span>System complexity</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">20. How risk-averse vs. innovation-focused should this project be?</label>
+                            <input type="range" name="risk_tolerance" min="1" max="5" value="3" class="w-full">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Very conservative</span>
+                                <span>Balanced</span>
+                                <span>Innovation-focused</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">21. What's your fallback plan if the complex onboarding doesn't work?</label>
+                            <textarea name="fallback_plan" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe your fallback plan or simpler alternative..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 7: Additional Considerations -->
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">💭 Additional Considerations</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">22. Should the onboarding be skippable for advanced users?</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="skippable_onboarding" value="yes_always" class="mr-2">
+                                    <span>Yes, always</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="skippable_onboarding" value="yes_with_warning" class="mr-2">
+                                    <span>Yes, with warning</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="skippable_onboarding" value="no" class="mr-2">
+                                    <span>No, mandatory</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="skippable_onboarding" value="partial" class="mr-2">
+                                    <span>Partial skip (core questions only)</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">23. How important is mobile optimization for onboarding?</label>
+                            <input type="range" name="mobile_importance" min="1" max="5" value="4" class="w-full">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Desktop only</span>
+                                <span>Mobile-friendly</span>
+                                <span>Mobile-first</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">24. Should there be different onboarding paths for different user types?</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="user_types" value="beginner_cook" class="mr-2">
+                                    <span>Beginner cook</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="user_types" value="experienced_cook" class="mr-2">
+                                    <span>Experienced cook</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="user_types" value="meal_prep_focused" class="mr-2">
+                                    <span>Meal prep focused</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="user_types" value="busy_professional" class="mr-2">
+                                    <span>Busy professional</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="user_types" value="family_planner" class="mr-2">
+                                    <span>Family planner</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="user_types" value="dietary_restrictions" class="mr-2">
+                                    <span>Dietary restrictions</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">25. How should the system handle onboarding updates (when users want to change their preferences)?</label>
+                            <textarea name="preference_updates" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe how preference updates should work..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">26. What features from the proposed system are you most skeptical about?</label>
+                            <textarea name="skeptical_features" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="List any features you're skeptical about and why..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">27. Are there any important features missing from the current plan?</label>
+                            <textarea name="missing_features" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe any missing features that should be included..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">28. How should the system handle users who abandon onboarding partway through?</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="abandonment_handling" value="save_progress" class="mr-2">
+                                    <span>Save progress and allow resume</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="abandonment_handling" value="email_reminder" class="mr-2">
+                                    <span>Send email reminder</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="abandonment_handling" value="simplify_questions" class="mr-2">
+                                    <span>Offer simplified version</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="abandonment_handling" value="allow_guest_mode" class="mr-2">
+                                    <span>Allow guest mode access</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">29. What's your budget/resource constraints for this project?</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="budget_constraints" value="tight" class="mr-2">
+                                    <span>Tight budget</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="budget_constraints" value="moderate" class="mr-2">
+                                    <span>Moderate budget</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="budget_constraints" value="flexible" class="mr-2">
+                                    <span>Flexible budget</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="budget_constraints" value="unlimited" class="mr-2">
+                                    <span>Time is main constraint</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">30. Any final thoughts, suggestions, or questions about the onboarding plan?</label>
+                            <textarea name="final_thoughts" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Share any final thoughts, suggestions, or questions..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition duration-200">
+                        Submit Feedback
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const feedback = {};
+            
+            // Process form data
+            for (let [key, value] of formData.entries()) {
+                if (feedback[key]) {
+                    if (Array.isArray(feedback[key])) {
+                        feedback[key].push(value);
+                    } else {
+                        feedback[key] = [feedback[key], value];
+                    }
+                } else {
+                    feedback[key] = value;
+                }
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('onboarding-feedback', JSON.stringify(feedback));
+            
+            // Show success message
+            alert('Thank you for your feedback! Your responses have been saved locally. The development team will review your input and adjust the onboarding plan accordingly.');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // Auto-save progress
+        let saveTimeout;
+        document.addEventListener('input', function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(function() {
+                const formData = new FormData(document.getElementById('feedbackForm'));
+                const feedback = {};
+                
+                for (let [key, value] of formData.entries()) {
+                    if (feedback[key]) {
+                        if (Array.isArray(feedback[key])) {
+                            feedback[key].push(value);
+                        } else {
+                            feedback[key] = [feedback[key], value];
+                        }
+                    } else {
+                        feedback[key] = value;
+                    }
+                }
+                
+                localStorage.setItem('onboarding-feedback-draft', JSON.stringify(feedback));
+            }, 1000);
+        });
+        
+        // Load saved draft on page load
+        window.addEventListener('load', function() {
+            const savedDraft = localStorage.getItem('onboarding-feedback-draft');
+            if (savedDraft) {
+                const feedback = JSON.parse(savedDraft);
+                
+                // Restore form values
+                for (let [key, value] of Object.entries(feedback)) {
+                    if (Array.isArray(value)) {
+                        value.forEach(v => {
+                            const input = document.querySelector(`[name="${key}"][value="${v}"]`);
+                            if (input) {
+                                input.checked = true;
+                            }
+                        });
+                    } else {
+                        const input = document.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            if (input.type === 'radio' || input.type === 'checkbox') {
+                                const radioInput = document.querySelector(`[name="${key}"][value="${value}"]`);
+                                if (radioInput) radioInput.checked = true;
+                            } else {
+                                input.value = value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

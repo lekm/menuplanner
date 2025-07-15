@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Meal Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: .8;
+      }
+    }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="w-full px-2 py-4">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-4">Weekly Meal Planner</h1>
+        
+        <!-- Energy Level Selector -->
+        <div class="flex justify-center mb-6">
+            <div class="bg-white rounded-lg shadow-md p-4 flex gap-4">
+                <span class="text-sm font-medium text-gray-700 self-center">Today's Energy:</span>
+                <button onclick="setEnergyLevel('high')" id="energy-high" class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-green-100 text-green-800 hover:bg-green-200">🚀 High Energy</button>
+                <button onclick="setEnergyLevel('medium')" id="energy-medium" class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-yellow-100 text-yellow-800 hover:bg-yellow-200">⚡ Medium Energy</button>
+                <button onclick="setEnergyLevel('low')" id="energy-low" class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-red-100 text-red-800 hover:bg-red-200">😴 Survival Mode</button>
+            </div>
+        </div>
+        
+        <!-- Meal Suggestions Panel -->
+        <div id="suggestions-panel" class="hidden mb-6 mx-auto max-w-4xl">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 class="font-semibold text-blue-900 mb-2">Suggested Meals for Your Energy Level:</h3>
+                <div id="suggestions-content" class="text-sm text-blue-800"></div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-7 gap-2 w-full">
+            <!-- Monday -->
+            <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-red-500">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Monday</h2>
+                
+                <div class="space-y-2">
+                    <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
+                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter breakfast meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
+                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter lunch meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
+                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter dinner meal..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tuesday -->
+            <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-orange-500">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Tuesday <span class="text-xs text-green-600">(WFH)</span></h2>
+                
+                <div class="space-y-2">
+                    <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
+                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter breakfast meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
+                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter lunch meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
+                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter dinner meal..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wednesday -->
+            <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-yellow-500">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Wednesday</h2>
+                
+                <div class="space-y-2">
+                    <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
+                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter breakfast meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
+                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter lunch meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
+                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter dinner meal..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thursday -->
+            <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-green-500">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Thursday</h2>
+                
+                <div class="space-y-2">
+                    <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
+                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter breakfast meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
+                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter lunch meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
+                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter dinner meal..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Friday -->
+            <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-blue-500">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Friday <span class="text-xs text-orange-600">(WFH→Bar)</span></h2>
+                
+                <div class="space-y-2">
+                    <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
+                        <h3 class="font-medium text-yellow-800 mb-1">Breakfast</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter breakfast meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
+                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter lunch meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
+                        <h3 class="font-medium text-purple-800 mb-1">Pre-Bar Dinner</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Quick meal before bar shift..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saturday -->
+            <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-indigo-500">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Saturday <span class="text-xs text-red-600">(Bar Day)</span></h2>
+                
+                <div class="space-y-2">
+                    <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
+                        <h3 class="font-medium text-yellow-800 mb-1">Late Breakfast</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Recovery breakfast..."></textarea>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
+                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter lunch meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
+                        <h3 class="font-medium text-purple-800 mb-1">Pre-Bar Dinner</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Quick meal before bar shift..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sunday -->
+            <div class="bg-white rounded-lg shadow-md p-2 border-t-4 border-violet-500">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2 text-center">Sunday <span class="text-xs text-blue-600">(Recovery)</span></h2>
+                
+                <div class="space-y-2">
+                    <div class="bg-yellow-50 p-2 rounded-md border-l-4 border-yellow-400">
+                        <h3 class="font-medium text-yellow-800 mb-1">Late Breakfast</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Recovery breakfast..."></textarea>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-2 rounded-md border-l-4 border-orange-400">
+                        <h3 class="font-medium text-orange-800 mb-1">Lunch</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter lunch meal..."></textarea>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-2 rounded-md border-l-4 border-purple-400">
+                        <h3 class="font-medium text-purple-800 mb-1">Dinner</h3>
+                        <textarea 
+                            class="w-full p-2 border border-gray-200 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+                            rows="4" 
+                            placeholder="Enter dinner meal..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save/Clear buttons -->
+        <div class="flex justify-center mt-8 space-x-4">
+            <button 
+                onclick="saveMealPlan()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                Save Plan
+            </button>
+            <button 
+                onclick="clearMealPlan()" 
+                class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                Clear All
+            </button>
+            <button 
+                onclick="generateGroceryList()" 
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
+                Generate Grocery List
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Energy-based meal suggestions tailored to your lifestyle
+        const mealSuggestions = {
+            high: {
+                title: "High Energy - Time to Cook! 🚀",
+                meals: [
+                    "🍖 Instant Pot Lamb Ragu (batch cook for freezing)",
+                    "🍕 Homemade pizza with your benchtop oven",
+                    "🥩 Sous vide steak with elaborate sides",
+                    "🍛 Complex curry using your 48-spice collection",
+                    "🍝 Fresh pasta from scratch with stand mixer",
+                    "🐟 Pan-seared fish with roasted vegetables",
+                    "🍲 Cast iron braised short ribs",
+                    "🥘 Moroccan tagine with preserved lemons"
+                ]
+            },
+            medium: {
+                title: "Medium Energy - Solid Cooking ⚡",
+                meals: [
+                    "🍳 Quick stir-fry with whatever vegetables you have",
+                    "🍝 One-pot pasta with herbs from your spice collection",
+                    "🍛 Simple curry using pre-made spice blends",
+                    "🍗 Cast iron chicken thighs with minimal prep",
+                    "🌯 Good wraps with quality fillings",
+                    "🍜 Upgraded instant ramen with proper toppings",
+                    "🥗 Mandoline-sliced salad with protein",
+                    "🍳 Fancy scrambled eggs with herbs"
+                ]
+            },
+            low: {
+                title: "Survival Mode - Avoid Uber Eats! 😴",
+                meals: [
+                    "🍞 Fancy toast (good bread + simple toppings)",
+                    "🥗 Pre-made salad with protein you have on hand",
+                    "🍝 Pasta with quality jarred sauce + cheese",
+                    "🥪 Upgraded sandwiches with good ingredients",
+                    "🍲 Heat up frozen Dinner Ladies meal",
+                    "🥤 Nutribullet smoothie bowl with nuts/seeds",
+                    "🧀 Cheese and crackers with fruit",
+                    "🥣 Good cereal or overnight oats"
+                ]
+            }
+        };
+
+        function setEnergyLevel(level) {
+            // Update button states
+            document.querySelectorAll('[id^="energy-"]').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-offset-2');
+                if (btn.id === `energy-${level}`) {
+                    btn.classList.add('ring-2', 'ring-offset-2', level === 'high' ? 'ring-green-500' : level === 'medium' ? 'ring-yellow-500' : 'ring-red-500');
+                }
+            });
+
+            // Show suggestions
+            const panel = document.getElementById('suggestions-panel');
+            const content = document.getElementById('suggestions-content');
+            const suggestions = mealSuggestions[level];
+            
+            content.innerHTML = `
+                <div class="font-medium mb-2">${suggestions.title}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    ${suggestions.meals.map(meal => `<div class="cursor-pointer hover:bg-blue-100 p-2 rounded transition-colors" onclick="quickAddMeal('${meal.replace(/'/g, "\\\\'")}')">&bull; ${meal}</div>`).join('')}
+                </div>
+                <div class="mt-3 text-xs text-blue-600">💡 Click any meal to quickly add it to your planner</div>
+            `;
+            
+            panel.classList.remove('hidden');
+        }
+
+        function quickAddMeal(meal) {
+            // Find the first empty textarea and add the meal
+            const textareas = document.querySelectorAll('textarea');
+            for (let textarea of textareas) {
+                if (!textarea.value.trim()) {
+                    textarea.value = meal;
+                    textarea.focus();
+                    break;
+                }
+            }
+        }
+
+        function generateGroceryList() {
+            const textareas = document.querySelectorAll('textarea');
+            const meals = [];
+            
+            textareas.forEach(textarea => {
+                if (textarea.value.trim()) {
+                    meals.push(textarea.value.trim());
+                }
+            });
+            
+            if (meals.length === 0) {
+                alert('Add some meals to your planner first!');
+                return;
+            }
+            
+            // Create a simple grocery list popup
+            const groceryWindow = window.open('', 'GroceryList', 'width=600,height=800,scrollbars=yes');
+            groceryWindow.document.write(`
+                <html>
+                <head>
+                    <title>Grocery List</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+                        h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+                        .meal { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; }
+                        .note { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107; }
+                        @media print { .no-print { display: none; } }
+                    </style>
+                </head>
+                <body>
+                    <h1>🛒 Grocery List</h1>
+                    <div class="note">
+                        <strong>📝 Note:</strong> This is a basic list based on your meals. Check your pantry, spice drawer, and fridge first!
+                    </div>
+                    <h2>Planned Meals:</h2>
+                    ${meals.map(meal => `<div class="meal">&bull; ${meal}</div>`).join('')}
+                    
+                    <h2>Shopping Categories:</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div>
+                            <h3>🥩 Proteins</h3>
+                            <div style="min-height: 100px; border: 1px dashed #ccc; padding: 10px;">
+                                <em>Add proteins needed for your meals</em>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>🥬 Fresh Produce</h3>
+                            <div style="min-height: 100px; border: 1px dashed #ccc; padding: 10px;">
+                                <em>Add vegetables and herbs (check your spice drawer first!)</em>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>🥫 Pantry</h3>
+                            <div style="min-height: 100px; border: 1px dashed #ccc; padding: 10px;">
+                                <em>Add pantry staples</em>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>❄️ Frozen</h3>
+                            <div style="min-height: 100px; border: 1px dashed #ccc; padding: 10px;">
+                                <em>Add frozen items (maybe backup Dinner Ladies meals?)</em>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="no-print" style="margin-top: 30px;">
+                        <button onclick="window.print()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">🖨️ Print List</button>
+                        <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-left: 10px;">Close</button>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        function saveMealPlan() {
+            const textareas = document.querySelectorAll('textarea');
+            const mealPlan = {};
+            
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const meals = ['Breakfast', 'Lunch', 'Dinner'];
+            
+            days.forEach((day, dayIndex) => {
+                mealPlan[day] = {};
+                meals.forEach((meal, mealIndex) => {
+                    const textareaIndex = dayIndex * 3 + mealIndex;
+                    mealPlan[day][meal] = textareas[textareaIndex].value;
+                });
+            });
+            
+            localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
+            alert('Meal plan saved!');
+        }
+
+        function clearMealPlan() {
+            if (confirm('Are you sure you want to clear all meals?')) {
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.value = '';
+                });
+                localStorage.removeItem('mealPlan');
+            }
+        }
+
+        function loadMealPlan() {
+            const savedPlan = localStorage.getItem('mealPlan');
+            if (savedPlan) {
+                const mealPlan = JSON.parse(savedPlan);
+                const textareas = document.querySelectorAll('textarea');
+                
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const meals = ['Breakfast', 'Lunch', 'Dinner'];
+                
+                days.forEach((day, dayIndex) => {
+                    if (mealPlan[day]) {
+                        meals.forEach((meal, mealIndex) => {
+                            const textareaIndex = dayIndex * 3 + mealIndex;
+                            if (mealPlan[day][meal]) {
+                                textareas[textareaIndex].value = mealPlan[day][meal];
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        // Load saved meal plan when page loads
+        window.addEventListener('load', loadMealPlan);
+        
+        // Auto-suggest energy level based on time and day (based on your schedule)
+        window.addEventListener('load', function() {
+            const now = new Date();
+            const day = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const hour = now.getHours();
+            
+            // Auto-suggest energy level based on your schedule
+            let suggestedEnergy = 'medium';
+            
+            // Tuesday (WFH day) - suggest high energy
+            if (day === 2) {
+                suggestedEnergy = 'high';
+            }
+            // Friday evening (before bar work) or very late/early hours
+            else if ((day === 5 && hour >= 17) || hour < 6 || hour > 23) {
+                suggestedEnergy = 'low';
+            }
+            // Weekend mornings (after bar work)
+            else if ((day === 6 || day === 0) && hour < 12) {
+                suggestedEnergy = 'low';
+            }
+            
+            // Highlight the suggested energy level
+            const suggestedBtn = document.getElementById(`energy-${suggestedEnergy}`);
+            if (suggestedBtn) {
+                suggestedBtn.style.boxShadow = '0 0 0 2px #3b82f6';
+                suggestedBtn.style.animation = 'pulse 2s infinite';
+            }
+        });
+    </script>
+</body>
+</html>

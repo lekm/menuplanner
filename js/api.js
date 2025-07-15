@@ -163,8 +163,132 @@ class MealPlannerAPI {
             .select()
             .single();
             
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Profile update failed:', error);
+            throw new Error(`Profile update failed: ${error.message}`);
+        }
+        
+        console.log('✅ Profile updated successfully:', data);
         return data;
+    }
+
+    // ===== Enhanced Onboarding Methods =====
+    
+    async completeOnboardingTransaction(onboardingData) {
+        if (!this.isSupabaseEnabled || !this.currentUser) {
+            throw new Error('User must be authenticated for onboarding');
+        }
+
+        console.log('🔄 Starting onboarding transaction...');
+        
+        // Prepare the complete profile data
+        const profileData = {
+            id: this.currentUser.id,
+            ...onboardingData,
+            onboarding_completed: true,
+            onboarding_date: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+
+        // Use a database transaction to ensure atomicity
+        const { data, error } = await this.supabase.rpc('complete_onboarding_transaction', {
+            profile_data: profileData
+        });
+
+        if (error) {
+            console.error('❌ Onboarding transaction failed:', error);
+            throw new Error(`Onboarding failed: ${error.message}`);
+        }
+
+        console.log('✅ Onboarding completed successfully:', data);
+        return data;
+    }
+
+    async retryOnboardingCompletion(onboardingData, maxRetries = 3) {
+        let lastError;
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`🔄 Onboarding attempt ${attempt}/${maxRetries}...`);
+                
+                const result = await this.completeOnboardingTransaction(onboardingData);
+                
+                // Verify the save worked
+                const verification = await this.verifyOnboardingComplete();
+                if (!verification.success) {
+                    throw new Error('Onboarding save verification failed');
+                }
+                
+                console.log('✅ Onboarding completed and verified');
+                return result;
+                
+            } catch (error) {
+                lastError = error;
+                console.error(`❌ Onboarding attempt ${attempt} failed:`, error);
+                
+                if (attempt < maxRetries) {
+                    // Wait before retrying (exponential backoff)
+                    const delay = Math.pow(2, attempt) * 1000;
+                    console.log(`⏳ Retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+        
+        throw new Error(`Onboarding failed after ${maxRetries} attempts: ${lastError.message}`);
+    }
+
+    async verifyOnboardingComplete() {
+        if (!this.isSupabaseEnabled || !this.currentUser) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        try {
+            const { data, error } = await this.supabase
+                .from('user_profiles')
+                .select('onboarding_completed, onboarding_date')
+                .eq('id', this.currentUser.id)
+                .single();
+                
+            if (error) {
+                return { success: false, error: error.message };
+            }
+            
+            const isComplete = data.onboarding_completed === true && data.onboarding_date !== null;
+            
+            return { 
+                success: isComplete,
+                data: data,
+                error: isComplete ? null : 'Onboarding not properly completed'
+            };
+            
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    async recoverIncompleteOnboarding() {
+        if (!this.isSupabaseEnabled || !this.currentUser) {
+            return { success: false, error: 'User not authenticated' };
+        }
+
+        try {
+            console.log('🔄 Attempting to recover incomplete onboarding...');
+            
+            const { data, error } = await this.supabase.rpc('recover_incomplete_onboarding');
+            
+            if (error) {
+                console.error('❌ Recovery failed:', error);
+                return { success: false, error: error.message };
+            }
+            
+            console.log('✅ Onboarding recovery completed:', data);
+            return { success: true, data: data };
+            
+        } catch (error) {
+            console.error('❌ Recovery exception:', error);
+            return { success: false, error: error.message };
+        }
     }
 
     // ===== Recipe Methods =====

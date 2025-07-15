@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Meal Planner Onboarding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .typing-indicator {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-gray-600">Loading AI configuration...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-4xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-semibold text-gray-800">🍽️ AI-Powered Meal Planner Setup</h1>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600">
+                        <span id="ai-status" class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">AI Ready</span>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <span id="model-info">OpenRouter • Gemini Flash</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Container -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Chat Messages -->
+            <div id="chat-container" class="h-96 overflow-y-auto p-6 space-y-4">
+                <!-- Messages will be populated here -->
+            </div>
+            
+            <!-- Input Area -->
+            <div id="input-area" class="border-t bg-gray-50 p-4">
+                <div class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Type your response here..."
+                        class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled
+                    >
+                    <button 
+                        onclick="sendMessage()"
+                        id="send-btn"
+                        class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                        disabled
+                    >
+                        Send
+                    </button>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    Press Enter to send • The AI will adapt questions based on your responses
+                </div>
+            </div>
+        </div>
+        
+        <!-- Debug Panel -->
+        <div class="mt-6 bg-white rounded-lg shadow-lg p-4">
+            <details>
+                <summary class="cursor-pointer text-sm font-medium text-gray-700 mb-2">🔍 Debug & AI Analysis</summary>
+                <div id="debug-info" class="text-xs text-gray-600 bg-gray-50 p-3 rounded font-mono">
+                    Initializing...
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let aiConfig = {
+            provider: 'openrouter',
+            apiKey: '',
+            model: 'google/gemini-flash-1.5',
+            baseUrl: 'https://openrouter.ai/api/v1'
+        };
+
+        // Application state
+        let conversationHistory = [];
+        let userProfile = {};
+        let isProcessing = false;
+
+        // System prompts
+        const systemPrompt = `You are an AI assistant helping users set up personalized meal planning. Your role is to:
+
+1. Ask thoughtful, leading questions to understand their cooking situation
+2. Adapt your questions based on their previous responses
+3. Keep the conversation natural and engaging
+4. Gather information about: living situation, accessibility needs, cooking background, goals, equipment, schedule, dietary restrictions, sensory issues, dislikes, preferences, and planning style
+
+Guidelines:
+- Ask ONE question at a time
+- Keep questions conversational and natural
+- Adapt follow-up questions based on their responses
+- Show empathy and understanding
+- When they mention specific challenges (ADHD, shared kitchen, etc.), acknowledge and adapt accordingly
+- Ask follow-up questions to get more details when responses are vague
+- End the conversation when you have enough information for comprehensive meal planning
+
+Important: This is a meal planning onboarding conversation. Stay focused on food, cooking, and meal planning topics.
+
+Current conversation context: You're helping someone set up their meal planning system. Start with a welcoming introduction and ask about their basic living situation and cooking context.`;
+
+        // Initialize app
+        async function initializeApp() {
+            try {
+                // Load configuration from server
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                if (config.openrouterApiKey) {
+                    aiConfig.apiKey = config.openrouterApiKey;
+                    aiConfig.provider = config.aiProvider || 'openrouter';
+                    aiConfig.model = config.aiModel || 'google/gemini-flash-1.5';
+                    
+                    // Hide loading screen
+                    document.getElementById('loading-screen').style.display = 'none';
+                    
+                    // Enable input
+                    document.getElementById('user-input').disabled = false;
+                    document.getElementById('send-btn').disabled = false;
+                    
+                    // Update UI
+                    updateAiStatus('Connected');
+                    document.getElementById('model-info').textContent = `${aiConfig.provider} • ${aiConfig.model}`;
+                    
+                    // Start conversation
+                    startConversation();
+                } else {
+                    throw new Error('No API key found');
+                }
+            } catch (error) {
+                console.error('Configuration error:', error);
+                document.getElementById('loading-screen').innerHTML = `
+                    <div class="text-center">
+                        <div class="text-red-500 text-6xl mb-4">❌</div>
+                        <p class="text-red-600 font-medium">Configuration Error</p>
+                        <p class="text-gray-600 text-sm mt-2">Please check your .env file and restart the server</p>
+                    </div>
+                `;
+                updateAiStatus('Error');
+            }
+            
+            // Add enter key handler
+            document.getElementById('user-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        // Update AI status
+        function updateAiStatus(status) {
+            const statusEl = document.getElementById('ai-status');
+            statusEl.textContent = status;
+            statusEl.className = `px-2 py-1 rounded-full text-xs ${
+                status === 'Connected' ? 'bg-green-100 text-green-800' :
+                status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+            }`;
+        }
+
+        // Start conversation
+        async function startConversation() {
+            addMessage('ai', 'Hi! I\'m excited to help you create a meal planning system that actually works for your life. I\'ll ask you some questions to understand your cooking style, preferences, and what you\'re hoping to achieve.');
+            
+            setTimeout(() => {
+                addMessage('ai', 'Let\'s start with the basics - tell me about your living situation and any constraints that might affect your cooking. For example, do you live alone, with roommates, or family? What\'s your kitchen setup like?');
+            }, 1500);
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            // Store user response
+            conversationHistory.push({ role: 'user', content: message });
+            
+            // Show typing indicator and processing status
+            const typingId = addTypingIndicator();
+            updateAiStatus('Processing');
+            
+            // Get AI response
+            try {
+                const response = await getAiResponse(message);
+                removeTypingIndicator(typingId);
+                addMessage('ai', response);
+                conversationHistory.push({ role: 'assistant', content: response });
+                updateAiStatus('Connected');
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage('ai', 'Sorry, I encountered an error. Please try again.');
+                console.error('AI Error:', error);
+                updateAiStatus('Error');
+            }
+            
+            updateDebugInfo();
+        }
+
+        // Get AI response
+        async function getAiResponse(userMessage) {
+            isProcessing = true;
+            
+            try {
+                const messages = [
+                    { role: 'system', content: systemPrompt },
+                    ...conversationHistory
+                ];
+                
+                const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${aiConfig.apiKey}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'Meal Planner Onboarding'
+                    },
+                    body: JSON.stringify({
+                        model: aiConfig.model,
+                        messages: messages,
+                        max_tokens: 300,
+                        temperature: 0.7,
+                        stream: false
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} - ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                return data.choices[0].message.content;
+                
+            } catch (error) {
+                console.error('AI API Error:', error);
+                throw error;
+            } finally {
+                isProcessing = false;
+            }
+        }
+
+        // Add message to chat
+        function addMessage(type, content) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex items-start space-x-3 fade-in ${type === 'user' ? 'justify-end' : ''}`;
+            
+            if (type === 'ai') {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+                    <div class="message-bubble bg-gray-100 p-3 rounded-lg">
+                        <p class="text-gray-800">${content}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-bubble bg-blue-500 text-white p-3 rounded-lg">
+                        <p>${content}</p>
+                    </div>
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-sm">👤</div>
+                `;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Add typing indicator
+        function addTypingIndicator() {
+            const chatContainer = document.getElementById('chat-container');
+            const typingDiv = document.createElement('div');
+            const typingId = 'typing-' + Date.now();
+            typingDiv.id = typingId;
+            typingDiv.className = 'flex items-start space-x-3 fade-in';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+                <div class="message-bubble bg-gray-100 p-3 rounded-lg">
+                    <div class="typing-indicator text-gray-600">AI is thinking...</div>
+                </div>
+            `;
+            
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            return typingId;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator(typingId) {
+            const typingDiv = document.getElementById(typingId);
+            if (typingDiv) {
+                typingDiv.remove();
+            }
+        }
+
+        // Update debug info
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML = `
+Provider: ${aiConfig.provider}
+Model: ${aiConfig.model}
+API Key: ${aiConfig.apiKey ? '✅ Loaded' : '❌ Missing'}
+Messages: ${conversationHistory.length}
+
+Latest Conversation:
+${JSON.stringify(conversationHistory.slice(-4), null, 2)}
+
+Configuration:
+${JSON.stringify(aiConfig, null, 2)}
+            `;
+        }
+
+        // Export conversation for analysis
+        function exportConversation() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                conversationHistory: conversationHistory,
+                userProfile: userProfile,
+                aiConfig: {
+                    provider: aiConfig.provider,
+                    model: aiConfig.model
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meal-planner-conversation-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', initializeApp);
+    </script>
+</body>
+</html>
