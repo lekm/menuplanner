@@ -16,9 +16,9 @@
       "dest": "/server.js"
     }
   ],
-  "env": {
-    "OPENROUTER_API_KEY": "@openrouter_api_key",
-    "AI_PROVIDER": "openrouter",
-    "AI_MODEL": "google/gemini-flash-1.5"
+  "functions": {
+    "server.js": {
+      "includeFiles": "**"
+    }
   }
 }
